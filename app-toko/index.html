@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Toko Barang — Daftar Produk</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:  '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+    .row-animate { opacity: 0; }
+
+    .glass {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .glass-header {
+      background: rgba(14, 165, 233, 0.15);
+      backdrop-filter: blur(8px);
+    }
+    tr.data-row:hover td { background: rgba(56, 189, 248, 0.08); }
+
+    .loader-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #38bdf8;
+      animation: pulse-dot 1.2s ease-in-out infinite;
+    }
+    .loader-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loader-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.4); border-radius: 3px; }
+  </style>
+</head>
+<body class="min-h-screen font-sans text-slate-100 p-4 md:p-8">
+
+  <!-- Header -->
+  <header class="max-w-6xl mx-auto mb-8 animate-fade-in-up">
+    <div class="glass rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-400 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/30">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-white tracking-tight">Daftar Produk</h1>
+          <p class="text-sm text-slate-400">Data real-time dari database MySQL</p>
+        </div>
+      </div>
+      <!-- Live badge -->
+      <div class="flex items-center gap-2 glass rounded-full px-4 py-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="text-xs font-medium text-emerald-300">Live Data</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats bar -->
+  <div class="max-w-6xl mx-auto mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in-up" style="animation-delay:.1s">
+    <div class="glass rounded-xl p-4 text-center">
+      <p class="text-xs text-slate-400 mb-1">Total Barang</p>
+      <p id="stat-total" class="text-2xl font-bold text-brand-400">—</p>
+    </div>
+    <div class="glass rounded-xl p-4 text-center">
+      <p class="text-xs text-slate-400 mb-1">Stok Tersedia</p>
+      <p id="stat-stok" class="text-2xl font-bold text-emerald-400">—</p>
+    </div>
+    <div class="glass rounded-xl p-4 text-center">
+      <p class="text-xs text-slate-400 mb-1">Harga Terendah</p>
+      <p id="stat-min" class="text-2xl font-bold text-amber-400">—</p>
+    </div>
+    <div class="glass rounded-xl p-4 text-center">
+      <p class="text-xs text-slate-400 mb-1">Harga Tertinggi</p>
+      <p id="stat-max" class="text-2xl font-bold text-rose-400">—</p>
+    </div>
+  </div>
+
+  <!-- Search & filter bar -->
+  <div class="max-w-6xl mx-auto mb-4 flex flex-col sm:flex-row gap-3 animate-fade-in-up" style="animation-delay:.15s">
+    <div class="relative flex-1">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input id="search-input" type="text" placeholder="Cari nama barang..."
+        class="w-full glass rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none focus:ring-2 focus:ring-brand-400/50 transition"/>
+    </div>
+    <button id="btn-refresh"
+      class="flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-700 hover:from-brand-400 hover:to-brand-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-brand-500/30 transition-all active:scale-95">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Main table card -->
+  <main class="max-w-6xl mx-auto animate-fade-in-up" style="animation-delay:.2s">
+    <div class="glass rounded-2xl overflow-hidden shadow-2xl">
+
+      <!-- Loading state -->
+      <div id="loading-state" class="flex flex-col items-center justify-center py-20 gap-4">
+        <div class="flex gap-2">
+          <div class="loader-dot"></div>
+          <div class="loader-dot"></div>
+          <div class="loader-dot"></div>
+        </div>
+        <p class="text-slate-400 text-sm">Memuat data dari server…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-state" class="hidden flex-col items-center justify-center py-20 gap-3">
+        <div class="w-14 h-14 rounded-full bg-rose-500/20 flex items-center justify-center">
+          <svg class="w-7 h-7 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          </svg>
+        </div>
+        <p class="text-rose-300 font-medium">Gagal memuat data</p>
+        <p id="error-msg" class="text-slate-400 text-sm text-center max-w-xs"></p>
+      </div>
+
+      <!-- Table wrapper -->
+      <div id="table-wrapper" class="hidden overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="glass-header">
+              <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs w-16">#</th>
+              <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Nama Barang</th>
+              <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Kategori</th>
+              <th class="text-right px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Harga</th>
+              <th class="text-right px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Stok</th>
+              <th class="text-center px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Status</th>
+            </tr>
+          </thead>
+          <tbody id="tabel-barang">
+            <!-- rows injected by app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="hidden flex-col items-center justify-center py-20 gap-3">
+        <svg class="w-14 h-14 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4"/>
+        </svg>
+        <p class="text-slate-400">Belum ada data barang</p>
+      </div>
+    </div>
+
+    <!-- Footer info -->
+    <p id="footer-info" class="text-center text-xs text-slate-600 mt-4"></p>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

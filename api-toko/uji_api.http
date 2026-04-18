@@ -1,0 +1,5 @@
+### Uji Endpoint: GET semua barang
+GET http://localhost/api-toko/get_barang.php
+Accept: application/json
+
+###

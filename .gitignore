@@ -1,0 +1,22 @@
+# OS temporary files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project specific
+.gemini/
+/tmp/
+
+# Logs
+error_log
+php_errors.log
+access.log
+
+# Exclude non-related Laragon files
+index.php
+"WEB JADWAL/"
