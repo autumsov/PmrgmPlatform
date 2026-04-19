@@ -13,9 +13,7 @@ const btnRefresh    = document.getElementById('btn-refresh');
 
 // Stats
 const statTotal = document.getElementById('stat-total');
-const statStok  = document.getElementById('stat-stok');
-const statMin   = document.getElementById('stat-min');
-const statMax   = document.getElementById('stat-max');
+const statAvg   = document.getElementById('stat-avg');
 
 // ===== STATE =====
 let allData = [];
@@ -27,14 +25,6 @@ function formatRupiah(angka) {
   return new Intl.NumberFormat('id-ID', {
     style: 'currency', currency: 'IDR', minimumFractionDigits: 0
   }).format(num);
-}
-
-// ===== HELPER: Badge stok =====
-function stockBadge(stok) {
-  const n = parseInt(stok) || 0;
-  if (n === 0)  return `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500/20 text-rose-300">Habis</span>`;
-  if (n <= 10)  return `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300">Hampir Habis</span>`;
-  return `<span class="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300">Tersedia</span>`;
 }
 
 // ===== RENDER TABEL =====
@@ -53,11 +43,9 @@ function renderTable(data) {
     tr.className = 'data-row border-t border-white/5 transition-colors duration-150 row-animate animate-fade-in-up';
     tr.style.animationDelay = `${index * 60}ms`;
 
-    const nama      = item.nama_barang  || item.nama      || item.name  || '—';
-    const kategori  = item.kategori     || item.category  || '-';
-    const harga     = item.harga        || item.price     || 0;
-    const stok      = item.stok         || item.stock     || 0;
-    const id        = item.id_barang    || item.id        || (index + 1);
+    const nama  = item.nama_barang  || item.nama  || item.name  || '—';
+    const harga = item.harga        || item.price || 0;
+    const id    = item.id_barang    || item.id    || (index + 1);
 
     tr.innerHTML = `
       <td class="px-6 py-4 text-slate-500 font-mono text-xs">${String(id).padStart(3,'0')}</td>
@@ -69,12 +57,7 @@ function renderTable(data) {
           <span class="font-medium text-slate-100">${nama}</span>
         </div>
       </td>
-      <td class="px-6 py-4">
-        <span class="px-2.5 py-1 rounded-lg text-xs bg-white/5 text-slate-400">${kategori}</span>
-      </td>
       <td class="px-6 py-4 text-right font-semibold text-emerald-300">${formatRupiah(harga)}</td>
-      <td class="px-6 py-4 text-right text-slate-300">${parseInt(stok).toLocaleString('id-ID')}</td>
-      <td class="px-6 py-4 text-center">${stockBadge(stok)}</td>
     `;
     tbodyEl.appendChild(tr);
   });
@@ -84,19 +67,15 @@ function renderTable(data) {
 function updateStats(data) {
   if (data.length === 0) {
     statTotal.textContent = '0';
-    statStok.textContent  = '0';
-    statMin.textContent   = '-';
-    statMax.textContent   = '-';
+    statAvg.textContent   = '-';
     return;
   }
 
   const hargaList  = data.map(d => parseFloat(d.harga || d.price || 0)).filter(h => !isNaN(h));
-  const totalStok  = data.reduce((s, d) => s + (parseInt(d.stok || d.stock || 0)), 0);
+  const avg = hargaList.reduce((a,b) => a+b, 0) / (hargaList.length || 1);
 
   statTotal.textContent = data.length;
-  statStok.textContent  = totalStok.toLocaleString('id-ID');
-  statMin.textContent   = hargaList.length ? formatRupiah(Math.min(...hargaList)) : '-';
-  statMax.textContent   = hargaList.length ? formatRupiah(Math.max(...hargaList)) : '-';
+  statAvg.textContent   = formatRupiah(avg);
 }
 
 // ===== SHOW STATE =====

@@ -91,22 +91,14 @@
   </header>
 
   <!-- Stats bar -->
-  <div class="max-w-6xl mx-auto mb-6 grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in-up" style="animation-delay:.1s">
+  <div class="max-w-6xl mx-auto mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in-up" style="animation-delay:.1s">
     <div class="glass rounded-xl p-4 text-center">
       <p class="text-xs text-slate-400 mb-1">Total Barang</p>
       <p id="stat-total" class="text-2xl font-bold text-brand-400">—</p>
     </div>
     <div class="glass rounded-xl p-4 text-center">
-      <p class="text-xs text-slate-400 mb-1">Stok Tersedia</p>
-      <p id="stat-stok" class="text-2xl font-bold text-emerald-400">—</p>
-    </div>
-    <div class="glass rounded-xl p-4 text-center">
-      <p class="text-xs text-slate-400 mb-1">Harga Terendah</p>
-      <p id="stat-min" class="text-2xl font-bold text-amber-400">—</p>
-    </div>
-    <div class="glass rounded-xl p-4 text-center">
-      <p class="text-xs text-slate-400 mb-1">Harga Tertinggi</p>
-      <p id="stat-max" class="text-2xl font-bold text-rose-400">—</p>
+      <p class="text-xs text-slate-400 mb-1">Rata-rata Harga</p>
+      <p id="stat-avg" class="text-2xl font-bold text-emerald-400">—</p>
     </div>
   </div>
 
@@ -160,12 +152,9 @@
         <table class="w-full text-sm">
           <thead>
             <tr class="glass-header">
-              <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs w-16">#</th>
+              <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs w-16">ID</th>
               <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Nama Barang</th>
-              <th class="text-left px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Kategori</th>
               <th class="text-right px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Harga</th>
-              <th class="text-right px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Stok</th>
-              <th class="text-center px-6 py-4 font-semibold text-brand-300 uppercase tracking-wider text-xs">Status</th>
             </tr>
           </thead>
           <tbody id="tabel-barang">
