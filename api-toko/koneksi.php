@@ -1,8 +1,8 @@
 <?php
-$host   = 'sql111.infinityfree.com';
-$db     = 'if0_41694521_db_toko';
-$user   = 'if0_41694521';
-$pass   = 'Ownwnwn56';
+$host   = 'localhost';
+$db     = 'db_toko';
+$user   = 'root';
+$pass   = '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
