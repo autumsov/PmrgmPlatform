@@ -50,4 +50,13 @@ Dosen Pengampu: Sucipto, M.Kom
 - **Search**: Live filter to search for items by name.
 
 ---
-Developed as part of the PjBL Project.
+
+## 👤 Identitas Mahasiswa
+- **Nama**: Muhammad Hasbih Akbar
+- **NIM**: 231220075
+- **Kelas**: 31
+- **Program Studi**: Teknik Informatika
+- **Kampus**: Universitas Muhammadiyah Pontianak
+- **Dosen Pengampu**: Sucipto, M.Kom
+
+*Developed as part of the PjBL Project.*
