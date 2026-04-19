@@ -2,13 +2,13 @@
 
 An implementation of a simple store management system using a **PHP API (Backend)** and a **Vanilla JS + Tailwind CSS (Frontend)**. This project demonstrates the Client-Server architecture by fetching data from a MySQL database and rendering it dynamically without hardcoded values.
 
-👤 Identitas Mahasiswa
-Nama: Muhammad Fajriska Maulana
-NIM: 231220044
-Kelas: 31
-Program Studi: Teknik Informatika
-Kampus: Universitas Muhammadiyah Pontianak
-Dosen Pengampu: Sucipto, M.Kom
+# 👤 Identitas Mahasiswa
+- Nama: Muhammad Fajriska Maulana
+- NIM: 231220044
+- Kelas: 31
+- Program Studi: Teknik Informatika
+- Kampus: Universitas Muhammadiyah Pontianak
+- Dosen Pengampu: Sucipto, M.Kom
 
 ## 🏗️ Architecture
 
