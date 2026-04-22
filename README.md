@@ -48,8 +48,46 @@ Dosen Pengampu: Sucipto, M.Kom
 - **Modern UI**: Styled with Tailwind CSS (Glassmorphism effect).
 - **Real-time Stats**: Automatically calculates total items, total stock, and price ranges.
 - **Search**: Live filter to search for items by name.
+- **PWA (Progressive Web App)**: Dapat diinstall sebagai aplikasi native di Desktop/Mobile.
 
 ---
+
+## 📱 Tugas Praktikum Pertemuan 4 — Progressive Web App (PWA)
+
+Pada pertemuan ini, aplikasi **Toko Barang** ditingkatkan menjadi **Progressive Web App (PWA)** sehingga dapat diinstall sebagai aplikasi native.
+
+### Apa yang Ditambahkan
+
+| File | Keterangan |
+| :--- | :--- |
+| `app-toko/icons/icon-192x192.png` | Ikon aplikasi 192×192 px |
+| `app-toko/icons/icon-512x512.png` | Ikon aplikasi 512×512 px |
+| `app-toko/manifest.json` | Manifest PWA (nama, ikon, warna tema, display mode) |
+| `app-toko/sw.js` | Service Worker dengan caching Install & Fetch |
+
+### File yang Dimodifikasi
+
+| File | Perubahan |
+| :--- | :--- |
+| `app-toko/index.html` | Ditambahkan `<link rel="manifest">`, `<meta name="theme-color">`, dan favicon |
+| `app-toko/app.js` | Ditambahkan script registrasi Service Worker |
+
+### Cara Kerja Service Worker (`sw.js`)
+
+1. **Install Event** — Meng-cache file-file utama (app shell): `index.html`, `app.js`, `style.css`, ikon, dan CDN resources.
+2. **Activate Event** — Membersihkan cache lama saat versi baru tersedia.
+3. **Fetch Event** — Menggunakan strategi *cache-first* untuk aset statis dan *network-first* untuk API calls.
+
+### Cara Verifikasi
+
+1. Pastikan **Laragon** (Apache + MySQL) berjalan.
+2. Buka `http://localhost/app-toko/` di **Google Chrome**.
+3. Buka **DevTools (F12)** → tab **Application**:
+   - **Manifest** — Pastikan nama dan ikon tampil.
+   - **Service Workers** — Pastikan `sw.js` berstatus *activated*.
+   - **Cache Storage** — Pastikan file-file ter-cache.
+4. Lihat **Address Bar** Chrome — akan muncul ikon **Install App** (🖥️⬇️).
+5. Klik ikon tersebut → Aplikasi web akan terinstall sebagai **aplikasi Desktop/Mobile**.
 
 ## 👤 Identitas Mahasiswa
 
