@@ -7,8 +7,8 @@ An implementation of a simple store management system using a **PHP API (Backend
 
 | Informasi | Keterangan |
 | :--- | :--- |
-| **Nama Lengkap** | Muhammad Hasbih Akbar |
-| **NIM** | `231220075` |
+| **Nama Lengkap** | Muhammad Fajriska Maulana |
+| **NIM** | `231220044` |
 | **Kelas** | 31 |
 | **Program Studi** | Teknik Informatika |
 | **Instansi** | Universitas Muhammadiyah Pontianak |
