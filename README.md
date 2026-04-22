@@ -2,13 +2,17 @@
 
 An implementation of a simple store management system using a **PHP API (Backend)** and a **Vanilla JS + Tailwind CSS (Frontend)**. This project demonstrates the Client-Server architecture by fetching data from a MySQL database and rendering it dynamically without hardcoded values.
 
-👤 Identitas Mahasiswa
-Nama: Muhammad Fajriska Maulana
-NIM: 231220044
-Kelas: 31
-Program Studi: Teknik Informatika
-Kampus: Universitas Muhammadiyah Pontianak
-Dosen Pengampu: Sucipto, M.Kom
+
+## 👤 Identitas Mahasiswa
+
+| Informasi | Keterangan |
+| :--- | :--- |
+| **Nama Lengkap** | Muhammad Fajriska Maulana |
+| **NIM** | `231220044` |
+| **Kelas** | 31 |
+| **Program Studi** | Teknik Informatika |
+| **Instansi** | Universitas Muhammadiyah Pontianak |
+| **Dosen Pengampu** | Sucipto, M.Kom |
 
 ## 🏗️ Architecture
 
@@ -88,16 +92,5 @@ Pada pertemuan ini, aplikasi **Toko Barang** ditingkatkan menjadi **Progressive 
    - **Cache Storage** — Pastikan file-file ter-cache.
 4. Lihat **Address Bar** Chrome — akan muncul ikon **Install App** (🖥️⬇️).
 5. Klik ikon tersebut → Aplikasi web akan terinstall sebagai **aplikasi Desktop/Mobile**.
-
-## 👤 Identitas Mahasiswa
-
-| Informasi | Keterangan |
-| :--- | :--- |
-| **Nama Lengkap** | Muhammad Hasbih Akbar |
-| **NIM** | `231220075` |
-| **Kelas** | 31 |
-| **Program Studi** | Teknik Informatika |
-| **Instansi** | Universitas Muhammadiyah Pontianak |
-| **Dosen Pengampu** | Sucipto, M.Kom |
 
 *<div align="center">Developed as part of the PjBL Project</div>*
