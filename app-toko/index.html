@@ -43,6 +43,23 @@
     .animate-float { animation: floating 3s ease-in-out infinite; }
     .row-animate { opacity: 0; }
     
+    /* Advanced Card & Hover Effects */
+    .card { 
+      background: #ffffff; 
+      border-radius: 16px; 
+      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+    }
+    
+    .card:hover {
+      transform: translateY(-8px) scale(1.01);
+      background: rgba(255, 255, 255, 0.1) !important;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1), 0 0 20px rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
     .text-shine {
       background: linear-gradient(90deg, #1e293b, #3b82f6, #1e293b);
       background-size: 200% auto;
@@ -52,38 +69,53 @@
       animation: shine 4s linear infinite;
     }
 
-    /* Liquid Glass Hover Effect */
+    /* Liquid Glass Hover Effect for Rows */
     .hover-liquid-glass:hover {
       background: rgba(15, 23, 42, 0.08) !important;
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    .loading-bar {
+      height: 3px;
+      width: 100%;
+      background: linear-gradient(to right, transparent, #3b82f6, transparent);
+      background-size: 200% 100%;
+      animation: shine 1.5s infinite linear;
+    }
     
-    /* Custom Scrollbar for white theme */
+    /* Custom Scrollbar */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="min-h-screen font-sans">
+<body class="min-h-screen font-sans overflow-x-hidden">
+
+  <!-- Background Decorative Aurora -->
+  <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
+    <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[120px]"></div>
+    <div class="absolute top-[20%] -right-[10%] w-[35%] h-[35%] rounded-full bg-indigo-400/10 blur-[110px]"></div>
+    <div class="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-amber-400/5 blur-[100px]"></div>
+  </div>
 
   <!-- Top Navbar -->
-  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
+  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
     <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-md shadow-primary-500/20">
+      <div class="flex items-center gap-2 group cursor-pointer">
+        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/30 group-hover:rotate-12 transition-transform duration-300">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
           </svg>
         </div>
-        <span class="text-lg font-bold text-slate-800 tracking-tight">TokoBarang</span>
+        <span class="text-lg font-bold text-slate-800 tracking-tight group-hover:text-primary-600 transition-colors">TokoBarang</span>
       </div>
       <div class="flex items-center gap-3">
-        <div class="hidden sm:flex items-center gap-1 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-100">
+        <div class="hidden sm:flex items-center gap-1 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-100 shadow-sm">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Server Online
+          Live Server
         </div>
       </div>
     </div>
@@ -92,55 +124,59 @@
   <main class="max-w-6xl mx-auto px-4 py-8">
     
     <!-- Hero Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <div class="card p-6 border border-slate-200 animate-pop overflow-hidden relative group">
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-        <div class="flex items-center gap-4 relative z-10">
-          <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 animate-float shadow-sm">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+      <div class="card p-7 border border-slate-200/60 animate-pop overflow-hidden group">
+        <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
+        <div class="flex items-center gap-5 relative z-10">
+          <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 animate-float shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
           </div>
           <div>
-            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Total Kategori</p>
-            <p id="stat-total" class="text-3xl font-black text-slate-800 tracking-tighter text-shine">0</p>
+            <p class="text-[11px] uppercase font-black tracking-[0.2em] text-slate-400 mb-1">Stock Category</p>
+            <p id="stat-total" class="text-4xl font-black text-slate-800 tracking-tighter text-shine">0</p>
           </div>
         </div>
       </div>
-      <div class="card p-6 border border-slate-200 animate-pop overflow-hidden relative group" style="animation-delay: 0.15s">
-        <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-        <div class="flex items-center gap-4 relative z-10">
-          <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 animate-float shadow-sm" style="animation-delay: 0.5s">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div class="card p-7 border border-slate-200/60 animate-pop overflow-hidden group" style="animation-delay: 0.15s">
+        <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
+        <div class="flex items-center gap-5 relative z-10">
+          <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 animate-float shadow-inner" style="animation-delay: 0.5s">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
           <div>
-            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Rata-rata Harga</p>
-            <p id="stat-avg" class="text-3xl font-black text-slate-800 tracking-tighter text-shine">Rp 0</p>
+            <p class="text-[11px] uppercase font-black tracking-[0.2em] text-slate-400 mb-1">Average Price</p>
+            <p id="stat-avg" class="text-4xl font-black text-slate-800 tracking-tighter text-shine">Rp 0</p>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Action Bar -->
-    <div class="flex flex-col sm:flex-row items-center gap-4 mb-6 animate-slide-in" style="animation-delay: 0.2s">
-      <div class="relative w-full sm:flex-1">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <div class="flex flex-col sm:flex-row items-center gap-4 mb-8 animate-slide-in" style="animation-delay: 0.2s">
+      <div class="relative w-full sm:flex-1 group">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         </div>
-        <input id="search-input" type="text" placeholder="Temukan produk di sini..." 
-          class="block w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-3 leading-5 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-custom text-sm">
+        <input id="search-input" type="text" placeholder="Search premium inventory..." 
+          class="block w-full bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 leading-5 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all text-sm shadow-sm">
       </div>
-      <button id="btn-refresh" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 shadow-lg shadow-primary-500/25 transition-custom active:scale-95">
-        <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        Muat Ulang
+      <button id="btn-refresh" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-bold rounded-2xl text-white bg-primary-600 hover:bg-primary-700 shadow-xl shadow-primary-500/30 transition-all active:scale-90 active:shadow-inner group">
+        <svg class="mr-2 h-5 w-5 group-hover:rotate-180 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Sync Now
       </button>
     </div>
 
     <!-- Inventory Table -->
-    <div class="card overflow-hidden border border-slate-100 animate-slide-in" style="animation-delay: 0.3s">
+    <div class="card overflow-hidden border border-slate-200/60 shadow-xl animate-slide-in" style="animation-delay: 0.3s">
+      <div class="loading-bar opacity-0 group-[.loading]:opacity-100 transition-opacity"></div>
       
-      <!-- Loading -->
-      <div id="loading-state" class="flex flex-col items-center justify-center py-24 gap-4">
-        <div class="w-8 h-8 border-4 border-slate-200 border-t-primary-600 rounded-full animate-spin"></div>
-        <p class="text-sm font-medium text-slate-500">Sinkronisasi data database...</p>
+      <!-- Loading Container -->
+      <div id="loading-state" class="flex flex-col items-center justify-center py-28 gap-6">
+        <div class="relative">
+          <div class="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin"></div>
+          <div class="absolute inset-0 w-full h-full border-4 border-transparent border-b-amber-400/50 rounded-full animate-reverse-spin"></div>
+        </div>
+        <p class="text-sm font-bold text-slate-400 tracking-widest uppercase">Connecting to secure database</p>
       </div>
 
       <!-- Table content -->
