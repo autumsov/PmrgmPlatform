@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost/api-toko/get_barang.php';
+const API_URL = '../api-toko/get_barang.php';
 
 // ===== ELEMEN DOM =====
 const tbodyEl       = document.getElementById('tabel-barang');
