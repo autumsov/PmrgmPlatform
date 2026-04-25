@@ -34,9 +34,24 @@
     .card { background: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
     .transition-custom { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    @keyframes shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+
     .animate-slide-in { animation: slideIn 0.4s ease-out forwards; }
+    .animate-pop { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    .animate-float { animation: floating 3s ease-in-out infinite; }
     .row-animate { opacity: 0; }
     
+    .text-shine {
+      background: linear-gradient(90deg, #1e293b, #3b82f6, #1e293b);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shine 4s linear infinite;
+    }
+
     /* Liquid Glass Hover Effect */
     .hover-liquid-glass:hover {
       background: rgba(15, 23, 42, 0.08) !important;
@@ -78,25 +93,27 @@
     
     <!-- Hero Stats -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <div class="card p-6 border border-slate-100 animate-slide-in">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      <div class="card p-6 border border-slate-200 animate-pop overflow-hidden relative group">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="flex items-center gap-4 relative z-10">
+          <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 animate-float shadow-sm">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
           </div>
           <div>
-            <p class="text-sm font-medium text-slate-500">Total Kategori Produk</p>
-            <p id="stat-total" class="text-2xl font-bold text-slate-800 tracking-tight">—</p>
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Total Kategori</p>
+            <p id="stat-total" class="text-3xl font-black text-slate-800 tracking-tighter text-shine">0</p>
           </div>
         </div>
       </div>
-      <div class="card p-6 border border-slate-100 animate-slide-in" style="animation-delay: 0.1s">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div class="card p-6 border border-slate-200 animate-pop overflow-hidden relative group" style="animation-delay: 0.15s">
+        <div class="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+        <div class="flex items-center gap-4 relative z-10">
+          <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 animate-float shadow-sm" style="animation-delay: 0.5s">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
           <div>
-            <p class="text-sm font-medium text-slate-500">Estimasi Rata-rata Harga</p>
-            <p id="stat-avg" class="text-2xl font-bold text-slate-800 tracking-tight">—</p>
+            <p class="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Rata-rata Harga</p>
+            <p id="stat-avg" class="text-3xl font-black text-slate-800 tracking-tighter text-shine">Rp 0</p>
           </div>
         </div>
       </div>
