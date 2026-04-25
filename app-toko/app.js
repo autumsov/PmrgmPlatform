@@ -40,7 +40,7 @@ function renderTable(data) {
 
   data.forEach((item, index) => {
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-50/80 transition-colors duration-150 row-animate animate-slide-in';
+    tr.className = 'hover-liquid-glass transition-all duration-300 row-animate animate-slide-in cursor-default';
     tr.style.animationDelay = `${index * 50}ms`;
 
     const nama  = item.nama_barang  || item.nama  || item.name  || '—';

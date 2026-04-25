@@ -37,6 +37,14 @@
     .animate-slide-in { animation: slideIn 0.4s ease-out forwards; }
     .row-animate { opacity: 0; }
     
+    /* Liquid Glass Hover Effect */
+    .hover-liquid-glass:hover {
+      background: rgba(15, 23, 42, 0.08) !important;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
     /* Custom Scrollbar for white theme */
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
