@@ -40,24 +40,26 @@ function renderTable(data) {
 
   data.forEach((item, index) => {
     const tr = document.createElement('tr');
-    tr.className = 'data-row border-t border-white/5 transition-colors duration-150 row-animate animate-fade-in-up';
-    tr.style.animationDelay = `${index * 60}ms`;
+    tr.className = 'hover:bg-slate-50/80 transition-colors duration-150 row-animate animate-slide-in';
+    tr.style.animationDelay = `${index * 50}ms`;
 
     const nama  = item.nama_barang  || item.nama  || item.name  || '—';
     const harga = item.harga        || item.price || 0;
     const id    = item.id_barang    || item.id    || (index + 1);
 
     tr.innerHTML = `
-      <td class="px-6 py-4 text-slate-500 font-mono text-xs">${String(id).padStart(3,'0')}</td>
-      <td class="px-6 py-4">
+      <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-400">#${String(id).padStart(3,'0')}</td>
+      <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500/30 to-brand-700/30 flex items-center justify-center flex-shrink-0 text-brand-300 font-bold text-xs">
+          <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-sm border border-primary-100/50">
             ${nama.charAt(0).toUpperCase()}
           </div>
-          <span class="font-medium text-slate-100">${nama}</span>
+          <span class="font-semibold text-slate-700 tracking-tight">${nama}</span>
         </div>
       </td>
-      <td class="px-6 py-4 text-right font-semibold text-emerald-300">${formatRupiah(harga)}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-slate-800">
+        ${formatRupiah(harga)}
+      </td>
     `;
     tbodyEl.appendChild(tr);
   });
