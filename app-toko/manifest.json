@@ -2,7 +2,7 @@
   "name": "Toko Barang — Daftar Produk",
   "short_name": "Toko Barang",
   "description": "Aplikasi daftar produk toko dengan data real-time dari database MySQL",
-  "start_url": "./index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
