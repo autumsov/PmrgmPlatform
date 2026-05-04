@@ -7,8 +7,9 @@
   <link rel="manifest" href="manifest.json" crossorigin="use-credentials"/>
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png"/>
   <link rel="apple-touch-icon" href="icons/icon-192x192.png"/>
-  <title>Toko Barang — Katalog Produk</title>
+  <title>Inventory Admin — Toko Barang</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <script>
     tailwind.config = {
@@ -16,14 +17,14 @@
         extend: {
           fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
           colors: {
-            primary: {
-              50: '#eff6ff',
-              100: '#dbeafe',
-              500: '#3b82f6',
-              600: '#2563eb',
-              700: '#1d4ed8',
+            brand: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              500: '#0f172a', // Navy blue style
+              600: '#1e293b',
+              700: '#334155',
             },
-            accent: '#f59e0b'
+            accent: '#3b82f6'
           }
         }
       }
@@ -31,52 +32,18 @@
   </script>
   <style>
     body { background-color: #f8fafc; color: #1e293b; }
-    .card { background: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
-    .transition-custom { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes popIn { 0% { opacity: 0; transform: scale(0.92); } 100% { opacity: 1; transform: scale(1); } }
-    @keyframes floating { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-    @keyframes shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-
-    .animate-slide-in { animation: slideIn 0.4s ease-out forwards; }
-    .animate-pop { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-    .animate-float { animation: floating 3s ease-in-out infinite; }
-    .row-animate { opacity: 0; }
-    
-    /* Advanced Card & Hover Effects */
-    .card { 
-      background: #ffffff; 
-      border-radius: 16px; 
-      transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-      position: relative;
+    .page-header-gradient {
+        background: linear-gradient(to bottom right, #ffffff 0%, #f1f5f9 100%);
     }
-    
-    .card:hover {
-      transform: translateY(-8px) scale(1.01);
-      background: rgba(255, 255, 255, 0.1) !important;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1), 0 0 20px rgba(59, 130, 246, 0.15);
-      border-color: rgba(59, 130, 246, 0.3);
+    .modern-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        transition: all 0.2s ease;
     }
-
-    .text-shine {
-      background: linear-gradient(90deg, #1e293b, #3b82f6, #1e293b);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: shine 4s linear infinite;
+    .modern-card:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
     }
-
-    /* Liquid Glass Hover Effect for Rows */
-    .hover-liquid-glass:hover {
-      background: rgba(15, 23, 42, 0.08) !important;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
     .loading-bar {
       height: 3px;
       width: 100%;
@@ -84,144 +51,221 @@
       background-size: 200% 100%;
       animation: shine 1.5s infinite linear;
     }
+    @keyframes shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
     
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    /* Animation for table rows */
+    @keyframes fadeInRow {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .row-fade-in {
+      animation: fadeInRow 0.4s ease-out forwards;
+    }
   </style>
 </head>
-<body class="min-h-screen font-sans overflow-x-hidden">
+<body class="min-h-screen font-sans bg-gray-50/50">
 
-  <!-- Background Decorative Aurora -->
-  <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none overflow-hidden">
-    <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[120px]"></div>
-    <div class="absolute top-[20%] -right-[10%] w-[35%] h-[35%] rounded-full bg-indigo-400/10 blur-[110px]"></div>
-    <div class="absolute -bottom-[10%] left-[20%] w-[30%] h-[30%] rounded-full bg-amber-400/5 blur-[100px]"></div>
+  <!-- Desktop App Shell Layout -->
+  <div class="flex flex-col min-h-screen">
+    
+    <!-- Top Navbar -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center gap-4">
+            <div class="bg-brand-600 text-white p-2 rounded-lg shadow-sm">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-gray-900 tracking-tight">Inventory Console</h1>
+              <div class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                Connected
+              </div>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <div class="hidden md:flex flex-col items-end">
+              <span class="text-sm font-semibold text-gray-700">Administrator</span>
+              <span class="text-[11px] text-gray-400">Store Manager</span>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 font-bold overflow-hidden">
+                <img src="https://ui-avatars.com/api/?name=Admin&background=f1f5f9&color=64748b" alt="Avatar">
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+      
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Katalog Produk</h2>
+          <p class="text-sm text-gray-500 mt-1">Kelola stok dan harga inventaris toko Anda secara real-time.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="btn-refresh" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Sync
+          </button>
+          <button id="btn-add-modal" class="inline-flex items-center px-5 py-2.5 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Tambah Produk
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="modern-card p-6 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total SKU</p>
+              <h3 id="stat-total" class="text-3xl font-extrabold text-gray-900">0</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center text-xs text-blue-600 font-semibold">
+            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd"/></svg>
+            <span>Active Inventory</span>
+          </div>
+        </div>
+
+        <div class="modern-card p-6 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Rata-rata Harga</p>
+              <h3 id="stat-avg" class="text-2xl font-extrabold text-gray-900 tracking-tight">Rp 0</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors duration-300">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-gray-400">
+            Market value benchmark
+          </div>
+        </div>
+
+        <div class="modern-card p-6 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Database Health</p>
+              <h3 class="text-xl font-extrabold text-emerald-600">Optimal</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+          </div>
+          <div class="mt-4 text-xs text-gray-400">
+            Connected to Local SQL
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Toolbar Container -->
+      <div class="bg-white border border-gray-200 rounded-2xl shadow-sm mb-6 p-4">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+          <div class="relative w-full sm:flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <input id="search-input" type="text" placeholder="Cari nama barang..." 
+              class="block w-full bg-gray-50 border-none rounded-xl py-2.5 pl-10 pr-4 focus:ring-2 focus:ring-blue-500/20 focus:bg-white transition-all text-sm outline-none">
+          </div>
+        </div>
+
+        <!-- Integrated Form Section (Collapsible) -->
+        <div id="form-inline-wrapper" class="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-100" style="display: none;">
+          <h4 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Entri Data Baru
+          </h4>
+          <form id="form-tambah-inline" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end" onsubmit="return false;">
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Nama Barang</label>
+              <input type="text" id="inline-nama" name="nama_barang" required class="block w-full bg-white border border-gray-200 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm outline-none shadow-sm" placeholder="Contoh: SSD Samsung 1TB">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Harga Unit (Rp)</label>
+              <input type="number" id="inline-harga" name="harga" required class="block w-full bg-white border border-gray-200 rounded-lg py-2 px-3 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm outline-none shadow-sm" placeholder="0">
+            </div>
+            <button type="submit" id="btn-submit-inline" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none transition-all active:scale-95 gap-2">
+              <span>Simpan</span>
+              <svg id="submit-spinner-inline" class="w-4 h-4 animate-spin hidden" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main Data Table Container -->
+      <div class="modern-card rounded-2xl overflow-hidden border-none">
+        <div class="loading-bar opacity-0 group-[.loading]:opacity-100 transition-opacity"></div>
+        
+        <!-- Table Scrollbox -->
+        <div id="table-wrapper" class="hidden overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-100">
+            <thead class="bg-gray-50/80">
+              <tr>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">UID</th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Detail Katalog</th>
+                <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Harga Dasar</th>
+                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest w-24">Management</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-barang" class="bg-white divide-y divide-gray-50">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Initial Connect State -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-32">
+          <div class="relative mb-6">
+            <div class="w-10 h-10 border-2 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+          </div>
+          <p class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">Fetching Secure API Data...</p>
+        </div>
+
+        <!-- Error Handler -->
+        <div id="error-state" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-red-50 text-red-500 mb-4">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800">Sinkronisasi Gagal</h3>
+            <p id="error-msg" class="text-sm text-gray-500 mt-2 max-w-xs mx-auto"></p>
+        </div>
+
+        <!-- No Data Case -->
+        <div id="empty-state" class="hidden flex-col items-center justify-center py-24 text-center">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-50 text-gray-300 mb-4">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4"/></svg>
+          </div>
+          <p class="text-gray-400 font-semibold italic">Basis data inventaris masih kosong.</p>
+        </div>
+      </div>
+
+      <!-- Professional Footer -->
+      <footer class="mt-12 pt-8 border-t border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-medium text-gray-400">
+          <p id="footer-info">System Integrity Verified</p>
+          <div class="flex items-center gap-3">
+            <span class="bg-gray-100 px-2 py-1 rounded">Admin UI v2.0.4</span>
+            <span class="bg-gray-100 px-2 py-1 rounded">PHP 8.1 / PWA Stack</span>
+          </div>
+        </div>
+      </footer>
+
+    </main>
   </div>
 
-  <!-- Top Navbar -->
-  <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
-    <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-2 group cursor-pointer">
-        <div class="w-9 h-9 rounded-lg bg-primary-600 flex items-center justify-center text-white shadow-lg shadow-primary-500/30 group-hover:rotate-12 transition-transform duration-300">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-          </svg>
-        </div>
-        <span class="text-lg font-bold text-slate-800 tracking-tight group-hover:text-primary-600 transition-colors">TokoBarang</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <div class="hidden sm:flex items-center gap-1 bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-100 shadow-sm">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live Server
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    
-    <!-- Hero Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-      <div class="card p-7 border border-slate-200/60 animate-pop overflow-hidden group">
-        <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-blue-500/5 rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
-        <div class="flex items-center gap-5 relative z-10">
-          <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 animate-float shadow-inner">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-          </div>
-          <div>
-            <p class="text-[11px] uppercase font-black tracking-[0.2em] text-slate-400 mb-1">Stock Category</p>
-            <p id="stat-total" class="text-4xl font-black text-slate-800 tracking-tighter text-shine">0</p>
-          </div>
-        </div>
-      </div>
-      <div class="card p-7 border border-slate-200/60 animate-pop overflow-hidden group" style="animation-delay: 0.15s">
-        <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform duration-1000"></div>
-        <div class="flex items-center gap-5 relative z-10">
-          <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 animate-float shadow-inner" style="animation-delay: 0.5s">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <div>
-            <p class="text-[11px] uppercase font-black tracking-[0.2em] text-slate-400 mb-1">Average Price</p>
-            <p id="stat-avg" class="text-4xl font-black text-slate-800 tracking-tighter text-shine">Rp 0</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Action Bar -->
-    <div class="flex flex-col sm:flex-row items-center gap-4 mb-8 animate-slide-in" style="animation-delay: 0.2s">
-      <div class="relative w-full sm:flex-1 group">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <svg class="h-5 w-5 text-slate-400 group-focus-within:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        </div>
-        <input id="search-input" type="text" placeholder="Search premium inventory..." 
-          class="block w-full bg-white/50 backdrop-blur-sm border border-slate-200 rounded-2xl py-3.5 pl-12 pr-4 leading-5 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all text-sm shadow-sm">
-      </div>
-      <button id="btn-refresh" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-sm font-bold rounded-2xl text-white bg-primary-600 hover:bg-primary-700 shadow-xl shadow-primary-500/30 transition-all active:scale-90 active:shadow-inner group">
-        <svg class="mr-2 h-5 w-5 group-hover:rotate-180 transition-transform duration-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        Sync Now
-      </button>
-    </div>
-
-    <!-- Inventory Table -->
-    <div class="card overflow-hidden border border-slate-200/60 shadow-xl animate-slide-in" style="animation-delay: 0.3s">
-      <div class="loading-bar opacity-0 group-[.loading]:opacity-100 transition-opacity"></div>
-      
-      <!-- Loading Container -->
-      <div id="loading-state" class="flex flex-col items-center justify-center py-28 gap-6">
-        <div class="relative">
-          <div class="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin"></div>
-          <div class="absolute inset-0 w-full h-full border-4 border-transparent border-b-amber-400/50 rounded-full animate-reverse-spin"></div>
-        </div>
-        <p class="text-sm font-bold text-slate-400 tracking-widest uppercase">Connecting to secure database</p>
-      </div>
-
-      <!-- Table content -->
-      <div id="table-wrapper" class="hidden overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-100">
-          <thead class="bg-slate-50">
-            <tr>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-widest">ID</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-widest">Informasi Produk</th>
-              <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-widest">Harga Satuan</th>
-            </tr>
-          </thead>
-          <tbody id="tabel-barang" class="bg-white divide-y divide-slate-50">
-            <!-- Data rows -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Error -->
-      <div id="error-state" class="hidden flex-col items-center justify-center py-20 px-4 text-center">
-        <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
-          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-slate-800">Gangguan Koneksi</h3>
-        <p id="error-msg" class="text-sm text-slate-500 mt-1 max-w-xs mx-auto"></p>
-      </div>
-
-      <!-- Empty -->
-      <div id="empty-state" class="hidden flex-col items-center justify-center py-24 text-center">
-        <svg class="w-16 h-16 text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4"/></svg>
-        <p class="text-slate-400 font-medium">Belum ada stok produk terdaftar</p>
-      </div>
-
-    </div>
-
-    <!-- Info Footer -->
-    <footer class="mt-8 pt-8 border-t border-slate-200 flex flex-col items-center gap-2">
-      <p id="footer-info" class="text-xs font-medium text-slate-500"></p>
-      <div class="flex items-center gap-4">
-        <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Powered by PWA Tech</span>
-      </div>
-    </footer>
-
-  </main>
-
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

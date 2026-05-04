@@ -40,25 +40,34 @@ function renderTable(data) {
 
   data.forEach((item, index) => {
     const tr = document.createElement('tr');
-    tr.className = 'hover-liquid-glass transition-all duration-300 row-animate animate-slide-in cursor-default';
-    tr.style.animationDelay = `${index * 50}ms`;
+    tr.className = 'hover:bg-gray-50/80 transition-colors cursor-default row-fade-in group';
+    tr.style.animationDelay = `${index * 40}ms`;
 
-    const nama  = item.nama_barang  || item.nama  || item.name  || '—';
-    const harga = item.harga        || item.price || 0;
-    const id    = item.id_barang    || item.id    || (index + 1);
+    const nama       = item.nama_barang  || item.nama  || item.name  || '—';
+    const harga      = item.harga        || item.price || 0;
+    const realId     = item.id           || item.id_barang || (index + 1);
+    const displayId  = item.displayId    || (index + 1);
 
     tr.innerHTML = `
-      <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-400">#${String(id).padStart(3,'0')}</td>
+      <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400 font-mono">#${String(displayId).padStart(3,'0')}</td>
       <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-sm border border-primary-100/50">
+          <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
             ${nama.charAt(0).toUpperCase()}
           </div>
-          <span class="font-semibold text-slate-700 tracking-tight">${nama}</span>
+          <div>
+            <span class="block text-sm font-bold text-gray-800 tracking-tight">${nama}</span>
+            <span class="block text-[10px] text-gray-400 uppercase tracking-widest font-bold">Standard SKU</span>
+          </div>
         </div>
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-slate-800">
+      <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900 text-sm">
         ${formatRupiah(harga)}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-center">
+        <button onclick="deleteBarang('${realId}', '${displayId}', '${nama}')" class="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all active:scale-90" title="Remove Item">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
       </td>
     `;
     tbodyEl.appendChild(tr);
@@ -108,7 +117,10 @@ async function fetchBarang() {
 
     if (json.status !== 'success') throw new Error(json.message || 'Response tidak valid');
 
-    allData = json.data || [];
+    allData = (json.data || []).map((item, idx) => ({
+      ...item,
+      displayId: idx + 1
+    }));
     updateStats(allData);
     renderTable(allData);
 
@@ -142,6 +154,125 @@ btnRefresh.addEventListener('click', () => {
   searchInput.value = '';
   fetchBarang();
 });
+
+// ===== HIDE MODAL LOGIC (We are no longer using this full-page modal) =====
+// ===== INLINE FORM TOGGLE LOGIC =====
+const btnAddModal = document.getElementById('btn-add-modal');
+const formInlineWrapper = document.getElementById('form-inline-wrapper');
+
+if(btnAddModal) {
+  btnAddModal.addEventListener('click', () => {
+    if(formInlineWrapper.style.display === 'none') {
+      formInlineWrapper.style.display = 'block';
+    } else {
+      formInlineWrapper.style.display = 'none';
+    }
+  });
+}
+
+// ===== INLINE FORM BARANG LOGIC =====
+const INLINE_API_URL = '../api-toko/tambah_barang.php';
+const formInline = document.getElementById('form-tambah-inline');
+const submitInlineSpinner = document.getElementById('submit-spinner-inline');
+
+if(formInline) {
+  formInline.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(submitInlineSpinner) submitInlineSpinner.classList.remove('hidden');
+    
+    const formData = new FormData(formInline);
+    const dataObj = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch(INLINE_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataObj)
+      });
+      const json = await response.json();
+      
+      if(response.ok && json.status === 'success') {
+        alert('Sukses menambah data baru!');
+        formInline.reset();
+        fetchBarang(); // Refresh data tanpa blinking
+      } else {
+        alert('Gagal: ' + (json.message || 'Error server'));
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan: ' + err.message);
+    } finally {
+      if(submitInlineSpinner) submitInlineSpinner.classList.add('hidden');
+    }
+  });
+}
+
+// ===== DELETE BARANG LOGIC =====
+window.deleteBarang = async function(dbId, displayId, nama) {
+  const formattedUid = String(displayId).padStart(3, '0');
+  
+  const result = await Swal.fire({
+    title: `Hapus #${formattedUid}?`,
+    text: `Produk "${nama}" akan dihapus permanen.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'Ya, Hapus!',
+    cancelButtonText: 'Batal',
+    background: '#ffffff',
+    customClass: {
+      popup: 'rounded-3xl border border-slate-100',
+      confirmButton: 'rounded-xl px-6 py-2.5 font-bold',
+      cancelButton: 'rounded-xl px-6 py-2.5 font-bold'
+    }
+  });
+
+  if (result.isConfirmed) {
+    // Show loading toast
+    Swal.fire({
+      title: 'Menghapus...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+      const response = await fetch('../api-toko/delete_barang.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: dbId })
+      });
+      const json = await response.json();
+      
+      if (response.ok && json.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: `Produk #${formattedUid} telah dihapus.`,
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: { popup: 'rounded-3xl' }
+        });
+        fetchBarang(); // Refresh data table
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: json.message || 'Error server',
+          customClass: { popup: 'rounded-3xl' }
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Terjadi kesalahan: ' + err.message,
+        customClass: { popup: 'rounded-3xl' }
+      });
+    }
+  }
+};
 
 // ===== INIT =====
 fetchBarang();

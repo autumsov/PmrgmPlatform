@@ -7,8 +7,8 @@ header('Access-Control-Allow-Origin: *');
 require_once 'koneksi.php';
 
 try {
-    // Query ambil semua data barang
-    $stmt = $pdo->query('SELECT * FROM barang');
+    // Query ambil semua data barang (diurutkan berdasarkan ID)
+    $stmt = $pdo->query('SELECT * FROM barang ORDER BY id ASC');
     $barang = $stmt->fetchAll();
 
     // Kembalikan response JSON dengan status success (menggunakan JSON_PRETTY_PRINT agar rapi)

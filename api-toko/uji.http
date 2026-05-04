@@ -1,3 +1,0 @@
-### Ambil Data Barang
-GET http://localhost/api-toko/get_barang.php
-Accept: application/json   

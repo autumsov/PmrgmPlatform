@@ -1,8 +1,14 @@
 <?php
-$host = 'sql111.infinityfree.com';
-$db = 'if0_41694521_db_toko'; // Ini yang salah sebelumnya, kurang "_db_"
-$user = 'if0_41694521';
-$pass = 'Ownwnwn56'; // Ganti tulisan ini dengan password vPanel Anda
+$host = 'localhost';
+$db = 'db_toko'; 
+$user = 'root';
+$pass = ''; 
+
+// Konfigurasi Hosting (Komentari saat run di localhost Laragon)
+// $host = 'sql111.infinityfree.com';
+// $db = 'if0_41694521_db_toko'; 
+// $user = 'if0_41694521';
+// $pass = 'Ownwnwn56'; 
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
