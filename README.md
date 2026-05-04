@@ -1,7 +1,8 @@
-# Toko Barang — Client-Server Application
+# Toko Barang — Inventory Management System (PjBL Project)
 
-An implementation of a simple store management system using a **PHP API (Backend)** and a **Vanilla JS + Tailwind CSS (Frontend)**. This project demonstrates the Client-Server architecture by fetching data from a MySQL database and rendering it dynamically without hardcoded values.
+An implementation of a professional **Inventory Management Dashboard** using a **PHP PDO API (Backend)** and a **Vanilla JS + Tailwind CSS (Frontend)**. This project follows a Client-Server architecture with a focus on Single Page Application (SPA) experience and Progressive Web App (PWA) capabilities.
 
+---
 
 ## 👤 Identitas Mahasiswa
 
@@ -14,83 +15,47 @@ An implementation of a simple store management system using a **PHP API (Backend
 | **Instansi** | Universitas Muhammadiyah Pontianak |
 | **Dosen Pengampu** | Sucipto, M.Kom |
 
-## 🏗️ Architecture
+---
 
-- **Backend**: PHP PDO API with JSON responses.
-- **Frontend**: Single Page Application (SPA) using `fetch()` and Tailwind CSS.
-- **Database**: MySQL.
-
-## 📁 Repository Structure
-
-- `api-toko/`: Contains PHP scripts for database connection and API endpoints.
-- `app-toko/`: Contains the frontend UI (`index.html`, `app.js`).
-- `database.sql`: SQL script to initialize the database schema and sample data.
-
-## 🚀 Getting Started
-
-### 1. Database Setup
-1. Open your MySQL manager (e.g., phpMyAdmin).
-2. Create a new database named `db_toko`.
-3. Import the `database.sql` file provided in this repository.
-
-### 2. Configuration
-- Ensure `api-toko/koneksi.php` has the correct database credentials:
-  ```php
-  $host   = 'localhost';
-  $db     = 'db_toko';
-  $user   = 'root';
-  $pass   = '';
-  ```
-
-### 3. Running the App
-1. Place both folders (`api-toko` and `app-toko`) in your web server root (e.g., `htdocs` or `www` in Laragon).
-2. Start your Apache and MySQL services.
-3. Open `http://localhost/app-toko/index.html` in your browser.
-
-## ✨ Features
-- **Dynamic Fetch**: Data is loaded automatically via JS `fetch()`.
-- **Modern UI**: Styled with Tailwind CSS (Glassmorphism effect).
-- **Real-time Stats**: Automatically calculates total items, total stock, and price ranges.
-- **Search**: Live filter to search for items by name.
-- **PWA (Progressive Web App)**: Dapat diinstall sebagai aplikasi native di Desktop/Mobile.
+## 🎨 Update Dashboard Terbaru (Professional Redesign)
+Aplikasi telah melalui perombakan total UI/UX menjadi sebuah **Inventory Console** yang profesional:
+- **UI Modern**: Menggunakan Tailwind CSS dengan font *Plus Jakarta Sans*. Desain berbasis kartu (*card-based*) dengan *hover effects* dan mikro-animasi.
+- **Auto-Environment Detection**: `koneksi.php` secara otomatis mendeteksi apakah aplikasi berjalan di **Local (Laragon)** atau **Production (InfinityFree)** tanpa perlu ubah kode manual.
+- **Real-time Statistics**: Panel evaluasi otomatis yang menghitung **Total SKU** dan **Total Nilai Produk (Inventory Worth)**.
+- **Smart Search**: Filter produk yang langsung memperbarui tabel dan statistik secara real-time.
+- **Sequential UID**: Logika UID tampilan yang rapi (001, 002, dst) yang tetap stabil meskipun data difilter.
 
 ---
 
 ## 📱 Tugas Praktikum Pertemuan 4 — Progressive Web App (PWA)
+Aplikasi telah dioptimalkan menjadi PWA sehingga dapat diinstall secara native di Desktop maupun Mobile.
+- **Service Worker (sw.js)**: Mendukung *Offline Caching* (v3) untuk aset inti aplikasi.
+- **Web Manifest**: Konfigurasi ikon (192, 512) dan skema warna untuk integrasi OS.
+- **Installability**: Muncul tombol "Install App" di Chrome Address Bar (via HTTPS).
 
-Pada pertemuan ini, aplikasi **Toko Barang** ditingkatkan menjadi **Progressive Web App (PWA)** sehingga dapat diinstall sebagai aplikasi native.
+---
 
-### Apa yang Ditambahkan
+## 🛠️ Tugas Praktikum Pertemuan 5 — Menulis Data (POST API)
 
-| File | Keterangan |
-| :--- | :--- |
-| `app-toko/icons/icon-192x192.png` | Ikon aplikasi 192×192 px |
-| `app-toko/icons/icon-512x512.png` | Ikon aplikasi 512×512 px |
-| `app-toko/manifest.json` | Manifest PWA (nama, ikon, warna tema, display mode) |
-| `app-toko/sw.js` | Service Worker dengan caching Install & Fetch |
+Pada tahap ini, aplikasi dilengkapi dengan fitur manipulasi data (CRUD) menggunakan method POST:
 
-### File yang Dimodifikasi
+### Apa yang Diimplementasikan:
+1. **Endpoint Backend (`tambah_barang.php`)**: Memproses data JSON via POST dan menyimpannya ke database menggunakan PDO Prepared Statements.
+2. **Inline Form Entry**: Form tambah produk diletakkan secara terintegrasi di atas tabel (menggunakan sistem *show/hide* toggle).
+3. **SPA Event Handling**: Menggunakan `e.preventDefault()` pada form submit untuk mengirim data via `fetch()` tanpa me-reload halaman (*No Blinking*).
+4. **Auto-Refresh UI**: Setelah data berhasil disimpan, tabel di bawahnya otomatis memuat ulang data terbaru sehingga pengalaman pengguna terasa sangat mulus.
 
-| File | Perubahan |
-| :--- | :--- |
-| `app-toko/index.html` | Ditambahkan `<link rel="manifest">`, `<meta name="theme-color">`, dan favicon |
-| `app-toko/app.js` | Ditambahkan script registrasi Service Worker |
+---
 
-### Cara Kerja Service Worker (`sw.js`)
+## 🚀 Live Demo & Repository
+- **GitHub Repository**: [https://github.com/autumsov/PmrgmPlatform](https://github.com/autumsov/PmrgmPlatform)
+- **Live Hosting**: [https://tokobarang.free.nf/app-toko/index.html](https://tokobarang.free.nf/app-toko/index.html)
 
-1. **Install Event** — Meng-cache file-file utama (app shell): `index.html`, `app.js`, `style.css`, ikon, dan CDN resources.
-2. **Activate Event** — Membersihkan cache lama saat versi baru tersedia.
-3. **Fetch Event** — Menggunakan strategi *cache-first* untuk aset statis dan *network-first* untuk API calls.
+---
 
-### Cara Verifikasi
+## 📁 Repository Structure
+- `api-toko/`: PHP PDO API endpoints (`get_barang.php`, `tambah_barang.php`, `delete_barang.php`).
+- `app-toko/`: Frontend assets (`index.html`, `app.js`, `manifest.json`, `sw.js`).
+- `database.sql`: MySQL Schema and Sample Data.
 
-1. Pastikan **Laragon** (Apache + MySQL) berjalan.
-2. Buka `http://localhost/app-toko/` di **Google Chrome**.
-3. Buka **DevTools (F12)** → tab **Application**:
-   - **Manifest** — Pastikan nama dan ikon tampil.
-   - **Service Workers** — Pastikan `sw.js` berstatus *activated*.
-   - **Cache Storage** — Pastikan file-file ter-cache.
-4. Lihat **Address Bar** Chrome — akan muncul ikon **Install App** (🖥️⬇️).
-5. Klik ikon tersebut → Aplikasi web akan terinstall sebagai **aplikasi Desktop/Mobile**.
-
-*<div align="center">Developed as part of the PjBL Project</div>*
+*<div align="center">Developed for PjBL Project — © 2026</div>*
