@@ -1,15 +1,15 @@
-const CACHE_NAME = 'toko-barang-v1';
+const CACHE_NAME = 'toko-barang-v2';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './app.js',
-  './style.css',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
   './manifest.json',
   'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+  'https://cdn.jsdelivr.net/npm/sweetalert2@11',
+  'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap'
 ];
 
 // ===== INSTALL: Pre-cache app shell =====
