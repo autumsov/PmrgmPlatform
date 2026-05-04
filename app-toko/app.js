@@ -83,10 +83,10 @@ function updateStats(data) {
   }
 
   const hargaList  = data.map(d => parseFloat(d.harga || d.price || 0)).filter(h => !isNaN(h));
-  const avg = hargaList.reduce((a,b) => a+b, 0) / (hargaList.length || 1);
-
+  const totalValue = hargaList.reduce((a,b) => a+b, 0);
+  
   statTotal.textContent = data.length;
-  statAvg.textContent   = formatRupiah(avg);
+  statAvg.textContent   = formatRupiah(totalValue);
 }
 
 // ===== SHOW STATE =====
@@ -140,13 +140,18 @@ async function fetchBarang() {
 // ===== SEARCH =====
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.toLowerCase().trim();
-  if (!q) { renderTable(allData); return; }
+  if (!q) { 
+    renderTable(allData); 
+    updateStats(allData);
+    return; 
+  }
   const filtered = allData.filter(item => {
     const nama = (item.nama_barang || item.nama || item.name || '').toLowerCase();
     const kat  = (item.kategori || item.category || '').toLowerCase();
     return nama.includes(q) || kat.includes(q);
   });
   renderTable(filtered);
+  updateStats(filtered);
 });
 
 // ===== REFRESH BUTTON =====
