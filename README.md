@@ -35,15 +35,17 @@ Aplikasi telah dioptimalkan menjadi PWA sehingga dapat diinstall secara native d
 
 ---
 
-## 🛠️ Tugas Praktikum Pertemuan 5 — Menulis Data (POST API)
+## 🛠️ Tugas Praktikum Pertemuan 5 & Tantangan Mandiri — CRUD Lengkap (API Berbasis Data)
 
-Pada tahap ini, aplikasi dilengkapi dengan fitur manipulasi data (CRUD) menggunakan method POST:
+Aplikasi telah menyelesaikan siklus penuh manipulasi data (CRUD) menggunakan method HTTP:
 
 ### Apa yang Diimplementasikan:
-1. **Endpoint Backend (`tambah_barang.php`)**: Memproses data JSON via POST dan menyimpannya ke database menggunakan PDO Prepared Statements.
-2. **Inline Form Entry**: Form tambah produk diletakkan secara terintegrasi di atas tabel (menggunakan sistem *show/hide* toggle).
-3. **SPA Event Handling**: Menggunakan `e.preventDefault()` pada form submit untuk mengirim data via `fetch()` tanpa me-reload halaman (*No Blinking*).
-4. **Auto-Refresh UI**: Setelah data berhasil disimpan, tabel di bawahnya otomatis memuat ulang data terbaru sehingga pengalaman pengguna terasa sangat mulus.
+1. **Endpoint Backend (`tambah_barang.php`, `delete_barang.php`, `update_barang.php`)**: Memproses data JSON via POST/PUT dan menjaga data dengan menggunakan PDO Prepared Statements (aman dari SQL Injection).
+2. **Inline Form Entry & Edit (Dinamis)**: Form tambah produk diletakkan secara terintegrasi di atas tabel (menggunakan sistem *show/hide* toggle). Ketika fitur Edit digunakan, teks tombol berubah dan API mengalihkan mode dari Create menjadi Update.
+3. **Konfirmasi Hapus**: Integrasi SweetAlert2 sebagai pengganti `confirm()` dasar untuk UX proses Hapus yang jauh lebih baik dan aman.
+4. **SPA & Sinkronisasi Tanpa Refresh**:
+   - `fetch()` API mencegah reload halaman.
+   - Tabel diperbarui otomatis setiap kali data di Edit, Dihapus, atau Ditambah (*No Blinking*).
 
 ---
 
@@ -54,7 +56,7 @@ Pada tahap ini, aplikasi dilengkapi dengan fitur manipulasi data (CRUD) mengguna
 ---
 
 ## 📁 Repository Structure
-- `api-toko/`: PHP PDO API endpoints (`get_barang.php`, `tambah_barang.php`, `delete_barang.php`).
+- `api-toko/`: PHP PDO API endpoints (`get_barang.php`, `tambah_barang.php`, `delete_barang.php`, `update_barang.php`).
 - `app-toko/`: Frontend assets (`index.html`, `app.js`, `manifest.json`, `sw.js`).
 - `database.sql`: MySQL Schema and Sample Data.
 

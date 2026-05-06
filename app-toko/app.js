@@ -17,6 +17,7 @@ const statAvg   = document.getElementById('stat-avg');
 
 // ===== STATE =====
 let allData = [];
+let editingId = null; // Menyimpan ID data yang sedang diedit
 
 // ===== HELPER: Format Rupiah =====
 function formatRupiah(angka) {
@@ -64,7 +65,10 @@ function renderTable(data) {
       <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900 text-sm">
         ${formatRupiah(harga)}
       </td>
-      <td class="px-6 py-4 whitespace-nowrap text-center">
+      <td class="px-6 py-4 whitespace-nowrap text-center flex items-center justify-center gap-2">
+        <button onclick="editBarang('${realId}')" class="text-gray-300 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-xl transition-all active:scale-90" title="Edit Item">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+        </button>
         <button onclick="deleteBarang('${realId}', '${displayId}', '${nama}')" class="text-gray-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all active:scale-90" title="Remove Item">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
@@ -169,16 +173,23 @@ if(btnAddModal) {
   btnAddModal.addEventListener('click', () => {
     if(formInlineWrapper.style.display === 'none') {
       formInlineWrapper.style.display = 'block';
+      cancelEdit(); // Reset form when explicitly opening it
     } else {
       formInlineWrapper.style.display = 'none';
+      cancelEdit();
     }
   });
 }
 
 // ===== INLINE FORM BARANG LOGIC =====
 const INLINE_API_URL = '../api-toko/tambah_barang.php';
+const UPDATE_API_URL = '../api-toko/update_barang.php';
 const formInline = document.getElementById('form-tambah-inline');
 const submitInlineSpinner = document.getElementById('submit-spinner-inline');
+const btnCancelInline = document.getElementById('btn-cancel-inline');
+const textSubmitInline = document.getElementById('text-submit-inline');
+const inlineNama = document.getElementById('inline-nama');
+const inlineHarga = document.getElementById('inline-harga');
 
 if(formInline) {
   formInline.addEventListener('submit', async (e) => {
@@ -188,8 +199,14 @@ if(formInline) {
     const formData = new FormData(formInline);
     const dataObj = Object.fromEntries(formData.entries());
 
+    let apiUrl = INLINE_API_URL;
+    if (editingId) {
+      apiUrl = UPDATE_API_URL;
+      dataObj.id = editingId;
+    }
+
     try {
-      const response = await fetch(INLINE_API_URL, {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -199,19 +216,66 @@ if(formInline) {
       const json = await response.json();
       
       if(response.ok && json.status === 'success') {
-        alert('Sukses menambah data baru!');
-        formInline.reset();
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: editingId ? 'Data berhasil diupdate!' : 'Sukses menambah data baru!',
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: { popup: 'rounded-3xl' }
+        });
+        cancelEdit();
         fetchBarang(); // Refresh data tanpa blinking
       } else {
-        alert('Gagal: ' + (json.message || 'Error server'));
+        Swal.fire({
+           icon: 'error',
+           title: 'Gagal!',
+           text: json.message || 'Error server',
+           customClass: { popup: 'rounded-3xl' }
+        });
       }
     } catch (err) {
-      alert('Terjadi kesalahan: ' + err.message);
+      Swal.fire({
+          icon: 'error',
+          title: 'Terjadi kesalahan!',
+          text: err.message,
+          customClass: { popup: 'rounded-3xl' }
+      });
     } finally {
       if(submitInlineSpinner) submitInlineSpinner.classList.add('hidden');
     }
   });
 }
+
+// ===== EDIT BARANG LOGIC =====
+window.editBarang = function(id) {
+  const item = allData.find(d => d.id == id || d.id_barang == id);
+  if (!item) return;
+
+  editingId = item.id || item.id_barang;
+  inlineNama.value = item.nama_barang || item.nama || item.name || '';
+  inlineHarga.value = item.harga || item.price || '';
+
+  // Tampilkan form jika sedang disembunyikan
+  if(formInlineWrapper) {
+    formInlineWrapper.style.display = 'block';
+  }
+
+  // Ubah tampilan tombol
+  if(textSubmitInline) textSubmitInline.textContent = 'Update';
+  if(btnCancelInline) btnCancelInline.classList.remove('hidden');
+  
+  // Scroll ke form
+  formInlineWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+};
+
+// ===== CANCEL EDIT LOGIC =====
+window.cancelEdit = function() {
+  editingId = null;
+  if(formInline) formInline.reset();
+  if(textSubmitInline) textSubmitInline.textContent = 'Simpan';
+  if(btnCancelInline) btnCancelInline.classList.add('hidden');
+};
 
 // ===== DELETE BARANG LOGIC =====
 window.deleteBarang = async function(dbId, displayId, nama) {
