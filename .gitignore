@@ -17,6 +17,7 @@ error_log
 php_errors.log
 access.log
 
-# Exclude non-related Laragon files
-index.php
-"WEB JADWAL/"
+# Exclude non-related project files
+WEB JADWAL/
+*.ps1
+*.zip
