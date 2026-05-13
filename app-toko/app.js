@@ -190,6 +190,7 @@ const btnCancelInline = document.getElementById('btn-cancel-inline');
 const textSubmitInline = document.getElementById('text-submit-inline');
 const inlineNama = document.getElementById('inline-nama');
 const inlineHarga = document.getElementById('inline-harga');
+const btnSubmitInline = document.getElementById('btn-submit-inline');
 
 if(formInline) {
   formInline.addEventListener('submit', async (e) => {
@@ -262,19 +263,31 @@ window.editBarang = function(id) {
   }
 
   // Ubah tampilan tombol
-  if(textSubmitInline) textSubmitInline.textContent = 'Update';
+  if(textSubmitInline) textSubmitInline.textContent = 'Update Data';
   if(btnCancelInline) btnCancelInline.classList.remove('hidden');
   
-  // Scroll ke form
-  formInlineWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  // Ubah warna tombol ke biru cerah (sesuai instruksi PjBL)
+  if(btnSubmitInline) {
+    btnSubmitInline.classList.remove('bg-brand-600', 'hover:bg-brand-700');
+    btnSubmitInline.classList.add('bg-blue-600', 'hover:bg-blue-700');
+  }
+  
+  // Scroll ke atas (ke form)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 // ===== CANCEL EDIT LOGIC =====
 window.cancelEdit = function() {
   editingId = null;
   if(formInline) formInline.reset();
-  if(textSubmitInline) textSubmitInline.textContent = 'Simpan';
+  if(textSubmitInline) textSubmitInline.textContent = 'Simpan Data';
   if(btnCancelInline) btnCancelInline.classList.add('hidden');
+
+  // Kembalikan warna tombol ke navy (brand)
+  if(btnSubmitInline) {
+    btnSubmitInline.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+    btnSubmitInline.classList.add('bg-brand-600', 'hover:bg-brand-700');
+  }
 };
 
 // ===== DELETE BARANG LOGIC =====
