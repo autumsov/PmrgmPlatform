@@ -115,7 +115,12 @@ async function fetchBarang() {
 
   try {
     const response = await fetch(API_URL);
+    const contentType = response.headers.get('content-type');
+    
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Server tidak mengirim data JSON. Silakan refresh halaman (F5) untuk melewati sistem keamanan hosting.');
+    }
 
     const json = await response.json();
 
@@ -209,11 +214,15 @@ if(formInline) {
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataObj)
       });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Gagal memproses JSON. Hosting sedang memblokir akses sementara, silakan refresh halaman.');
+      }
+
       const json = await response.json();
       
       if(response.ok && json.status === 'success') {
@@ -325,6 +334,12 @@ window.deleteBarang = async function(dbId, displayId, nama) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: dbId })
       });
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Gagal menghapus. Respons server bukan JSON.');
+      }
+
       const json = await response.json();
       
       if (response.ok && json.status === 'success') {
