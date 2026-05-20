@@ -1,4 +1,10 @@
-const API_URL = '../api-toko/get_barang.php';
+// === DETEKSI OTOMATIS: Local vs Cloud ===
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const BASE_URL = isLocal 
+    ? '../api-toko' // Path untuk Laragon/XAMPP
+    : 'https://DOMAIN_KAMU.infinityfreeapp.com/api-toko'; // GANTI dengan domain hosting kamu!
+
+const API_URL = `${BASE_URL}/get_barang.php`;
 
 // ===== ELEMEN DOM =====
 const tbodyEl       = document.getElementById('tabel-barang');
@@ -187,8 +193,8 @@ if(btnAddModal) {
 }
 
 // ===== INLINE FORM BARANG LOGIC =====
-const INLINE_API_URL = '../api-toko/tambah_barang.php';
-const UPDATE_API_URL = '../api-toko/update_barang.php';
+const INLINE_API_URL = `${BASE_URL}/tambah_barang.php`;
+const UPDATE_API_URL = `${BASE_URL}/update_barang.php`;
 const formInline = document.getElementById('form-tambah-inline');
 const submitInlineSpinner = document.getElementById('submit-spinner-inline');
 const btnCancelInline = document.getElementById('btn-cancel-inline');
@@ -329,7 +335,7 @@ window.deleteBarang = async function(dbId, displayId, nama) {
     });
 
     try {
-      const response = await fetch('../api-toko/delete_barang.php', {
+      const response = await fetch(`${BASE_URL}/delete_barang.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: dbId })

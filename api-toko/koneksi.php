@@ -9,11 +9,12 @@ if ($is_local) {
     $user = 'root';
     $pass = ''; 
 } else {
-    // Konfigurasi Produk (InfinityFree)
-    $host = 'sql111.infinityfree.com';
-    $db   = 'if0_41694521_db_toko'; 
-    $user = 'if0_41694521';
-    $pass = 'Ownwnwn56'; 
+    // === KONFIGURASI CLOUD (InfinityFree / cPanel) ===
+    // Silakan ganti sesuai data di Control Panel Hosting kamu!
+    $host = 'sql111.infinityfree.com'; // Contoh: sql123.infinityfree.com
+    $db   = 'if0_41694521_db_toko';    // Contoh: if0_12345678_dbtoko
+    $user = 'if0_41694521';           // Contoh: if0_12345678
+    $pass = 'Ownwnwn56';              // Masukkan Password Hosting kamu!
 }
 
 $charset = 'utf8mb4';
