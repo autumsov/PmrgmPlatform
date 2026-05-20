@@ -380,6 +380,60 @@ window.deleteBarang = async function(dbId, displayId, nama) {
 // ===== INIT =====
 fetchBarang();
 
+// ===== PWA INSTALLATION HELPER =====
+let deferredPrompt;
+
+// 1. Android/Chrome Install Prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Munculkan notifikasi custom setelah 5 detik jika belum terinstall
+  setTimeout(() => {
+    Swal.fire({
+      title: 'Install Aplikasi?',
+      text: 'Pasang aplikasi di layar utama untuk akses lebih cepat dan fitur offline!',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Install Sekarang',
+      cancelButtonText: 'Nanti Saja',
+      customClass: { popup: 'rounded-3xl' }
+    }).then((result) => {
+      if (result.isConfirmed && deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') console.log('[PWA] User accepted');
+          deferredPrompt = null;
+        });
+      }
+    });
+  }, 5000);
+});
+
+// 2. iOS Detection & Helper (Safari)
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+if (isIOS && !isStandalone) {
+  setTimeout(() => {
+    Swal.fire({
+      title: 'Pasang di iPhone',
+      html: `
+        <div class="text-left text-sm space-y-2">
+          <p>Untuk menginstal, ikuti langkah berikut:</p>
+          <ol class="list-decimal ml-5">
+            <li>Tekan tombol <strong>Share</strong> (ikon kotak dengan panah atas).</li>
+            <li>Scroll ke bawah dan pilih <strong>'Add to Home Screen'</strong>.</li>
+          </ol>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Mengerti',
+      customClass: { popup: 'rounded-3xl' }
+    });
+  }, 4000);
+}
+
 // ===== SERVICE WORKER REGISTRATION =====
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
