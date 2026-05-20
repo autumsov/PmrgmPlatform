@@ -411,27 +411,34 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 // 2. iOS Detection & Helper (Safari)
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+const isIOS = /iPhone|iPad|iPod/.test(navigator.platform) || 
+             (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
 if (isIOS && !isStandalone) {
+  // Munculkan instruksi setiap 3 detik setelah load
   setTimeout(() => {
     Swal.fire({
       title: 'Pasang di iPhone',
       html: `
-        <div class="text-left text-sm space-y-2">
-          <p>Untuk menginstal, ikuti langkah berikut:</p>
-          <ol class="list-decimal ml-5">
-            <li>Tekan tombol <strong>Share</strong> (ikon kotak dengan panah atas).</li>
-            <li>Scroll ke bawah dan pilih <strong>'Add to Home Screen'</strong>.</li>
-          </ol>
+        <div class="text-left text-sm p-2">
+          <p class="mb-4">Website ini bisa jadi aplikasi! Ikuti langkah ini:</p>
+          <div class="flex items-center gap-3 mb-3">
+             <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg">1</div>
+             <p>Klik tombol <strong>'Share'</strong> di bar bawah Safari.</p>
+          </div>
+          <div class="flex items-center gap-3">
+             <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg">2</div>
+             <p>Pilih menu <strong>'Add to Home Screen'</strong>.</p>
+          </div>
         </div>
       `,
       icon: 'info',
-      confirmButtonText: 'Mengerti',
+      confirmButtonText: 'Klik Disini Jika Sudah Paham',
+      confirmButtonColor: '#3b82f6',
       customClass: { popup: 'rounded-3xl' }
     });
-  }, 4000);
+  }, 2000);
 }
 
 // ===== SERVICE WORKER REGISTRATION =====
