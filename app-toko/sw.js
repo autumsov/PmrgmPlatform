@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toko-barang-v3';
+const CACHE_NAME = 'toko-barang-v5';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -50,14 +50,24 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => caches.match(event.request, { ignoreSearch: true }))
     );
     return;
   }
 
   // Cache-first for everything else
   event.respondWith(
-    caches.match(event.request)
-      .then((cached) => cached || fetch(event.request))
+    caches.match(event.request, { ignoreSearch: true })
+      .then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          // Dynamic Cache untuk eksternal script/CSS (Tailwind, Fonts, dll)
+          if (event.request.method === 'GET' && (response.ok || response.type === 'opaque')) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        });
+      })
   );
 });

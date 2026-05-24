@@ -1,12 +1,119 @@
-// === DETEKSI OTOMATIS: Local vs Cloud ===
+// === 1. KONFIGURASI API & DETEKSI OTOMATIS ===
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const BASE_URL = isLocal 
-    ? '../api-toko' // Path untuk Laragon/XAMPP
-    : 'https://DOMAIN_KAMU.infinityfreeapp.com/api-toko'; // GANTI dengan domain hosting kamu!
+    ? '../api-toko' 
+    : 'https://tokobarang.free.nf/api-toko'; 
 
 const API_URL = `${BASE_URL}/get_barang.php`;
 
-// ===== ELEMEN DOM =====
+// === 2. PWA INSTALLATION LOGIC (RUNS FIRST) ===
+console.log('[PWA] UI Version 7.0.0 Loaded');
+
+let deferredPrompt;
+const pwaInstallBtn = document.getElementById('pwa-install-btn');
+
+// Android / Chrome: Capture install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  
+  // Show manual install button
+  if (pwaInstallBtn) pwaInstallBtn.classList.remove('hidden');
+  
+  // Also show a friendly SweetAlert after 5 seconds
+  setTimeout(() => {
+    Swal.fire({
+      title: 'Dapatkan Aplikasi!',
+      text: 'Pasang di layar utama untuk akses instan dan lebih cepat.',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Install Sekarang',
+      cancelButtonText: 'Nanti',
+      customClass: { popup: 'rounded-3xl' }
+    }).then((result) => {
+      if (result.isConfirmed && deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            console.log('[PWA] User installed');
+            if (pwaInstallBtn) pwaInstallBtn.classList.add('hidden');
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+  }, 5000);
+});
+
+// iOS: Guide for manual installation
+const isIOS = /iPhone|iPad|iPod/.test(navigator.platform) || 
+             (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+if (isIOS && !isStandalone) {
+  // Show manual button for iOS too (acts as a trigger for the guide)
+  if (pwaInstallBtn) {
+    pwaInstallBtn.classList.remove('hidden');
+    pwaInstallBtn.innerHTML = `
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      How to Install
+    `;
+  }
+
+  // Automatic guide after 3 seconds
+  setTimeout(showIOSGuide, 3000);
+}
+
+function showIOSGuide() {
+  Swal.fire({
+    title: 'Install on iPhone',
+    html: `
+      <div class="text-left text-sm space-y-3 p-2">
+        <p>Aplikasi ini bisa dipasang di iPhone kamu tanpa App Store!</p>
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold">1</div>
+           <p>Tekan tombol <strong>'Share'</strong> (ikon kotak panah atas di bawah Safari).</p>
+        </div>
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold">2</div>
+           <p>Pilih menu <strong>'Add to Home Screen'</strong>.</p>
+        </div>
+      </div>
+    `,
+    icon: 'info',
+    confirmButtonText: 'Siap, Mengerti!',
+    confirmButtonColor: '#3b82f6',
+    customClass: { popup: 'rounded-3xl' }
+  });
+}
+
+if (pwaInstallBtn) {
+  pwaInstallBtn.addEventListener('click', () => {
+    if (isIOS) {
+       showIOSGuide();
+    } else if (deferredPrompt) {
+       deferredPrompt.prompt();
+    } else {
+       Swal.fire({
+         title: 'Siap Diinstal!',
+         text: 'Gunakan browser Chrome/Safari lalu pilih menu "Install" atau "Add to Home Screen".',
+         icon: 'success',
+         customClass: { popup: 'rounded-3xl' }
+       });
+    }
+  });
+}
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('[SW] Registered:', reg.scope))
+      .catch(err => console.error('[SW] Registration failed:', err));
+  });
+}
+
+// === 3. ELEMEN DOM ===
 const tbodyEl       = document.getElementById('tabel-barang');
 const loadingEl     = document.getElementById('loading-state');
 const errorEl       = document.getElementById('error-state');
@@ -380,72 +487,4 @@ window.deleteBarang = async function(dbId, displayId, nama) {
 // ===== INIT =====
 fetchBarang();
 
-// ===== PWA INSTALLATION HELPER =====
-let deferredPrompt;
-
-// 1. Android/Chrome Install Prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  
-  // Munculkan notifikasi custom setelah 5 detik jika belum terinstall
-  setTimeout(() => {
-    Swal.fire({
-      title: 'Install Aplikasi?',
-      text: 'Pasang aplikasi di layar utama untuk akses lebih cepat dan fitur offline!',
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'Install Sekarang',
-      cancelButtonText: 'Nanti Saja',
-      customClass: { popup: 'rounded-3xl' }
-    }).then((result) => {
-      if (result.isConfirmed && deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') console.log('[PWA] User accepted');
-          deferredPrompt = null;
-        });
-      }
-    });
-  }, 5000);
-});
-
-// 2. iOS Detection & Helper (Safari)
-const isIOS = /iPhone|iPad|iPod/.test(navigator.platform) || 
-             (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-
-if (isIOS && !isStandalone) {
-  // Munculkan instruksi setiap 3 detik setelah load
-  setTimeout(() => {
-    Swal.fire({
-      title: 'Pasang di iPhone',
-      html: `
-        <div class="text-left text-sm p-2">
-          <p class="mb-4">Website ini bisa jadi aplikasi! Ikuti langkah ini:</p>
-          <div class="flex items-center gap-3 mb-3">
-             <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg">1</div>
-             <p>Klik tombol <strong>'Share'</strong> di bar bawah Safari.</p>
-          </div>
-          <div class="flex items-center gap-3">
-             <div class="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg">2</div>
-             <p>Pilih menu <strong>'Add to Home Screen'</strong>.</p>
-          </div>
-        </div>
-      `,
-      icon: 'info',
-      confirmButtonText: 'Klik Disini Jika Sudah Paham',
-      confirmButtonColor: '#3b82f6',
-      customClass: { popup: 'rounded-3xl' }
-    });
-  }, 2000);
-}
-
-// ===== SERVICE WORKER REGISTRATION =====
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('[SW] Registered:', reg.scope))
-      .catch(err => console.error('[SW] Registration failed:', err));
-  });
-}
+// (PWA Logic moved to top)
