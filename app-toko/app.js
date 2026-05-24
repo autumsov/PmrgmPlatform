@@ -7,76 +7,55 @@ const BASE_URL = isLocal
 const API_URL = `${BASE_URL}/get_barang.php`;
 
 // === 2. PWA INSTALLATION LOGIC (RUNS FIRST) ===
-console.log('[PWA] UI Version 7.0.0 Loaded');
+console.log('[PWA] UI Version 8.0.0 Loaded');
 
 let deferredPrompt;
 const pwaInstallBtn = document.getElementById('pwa-install-btn');
 
-// Android / Chrome: Capture install prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  
-  // Show manual install button
-  if (pwaInstallBtn) pwaInstallBtn.classList.remove('hidden');
-  
-  // Also show a friendly SweetAlert after 5 seconds
-  setTimeout(() => {
-    Swal.fire({
-      title: 'Dapatkan Aplikasi!',
-      text: 'Pasang di layar utama untuk akses instan dan lebih cepat.',
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'Install Sekarang',
-      cancelButtonText: 'Nanti',
-      customClass: { popup: 'rounded-3xl' }
-    }).then((result) => {
-      if (result.isConfirmed && deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choice) => {
-          if (choice.outcome === 'accepted') {
-            console.log('[PWA] User installed');
-            if (pwaInstallBtn) pwaInstallBtn.classList.add('hidden');
-          }
-          deferredPrompt = null;
-        });
-      }
-    });
-  }, 5000);
-});
-
-// iOS: Guide for manual installation
-const isIOS = /iPhone|iPad|iPod/.test(navigator.platform) || 
+// Deteksi platform
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || 
              (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
-if (isIOS && !isStandalone) {
-  // Show manual button for iOS too (acts as a trigger for the guide)
-  if (pwaInstallBtn) {
-    pwaInstallBtn.classList.remove('hidden');
-    pwaInstallBtn.innerHTML = `
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      How to Install
-    `;
-  }
+// === Chromium: Tangkap event install prompt (jika tersedia) ===
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  console.log('[PWA] beforeinstallprompt captured!');
+});
 
-  // Automatic guide after 3 seconds
-  setTimeout(showIOSGuide, 3000);
+// === Fungsi untuk trigger native install (Chromium only) ===
+function triggerNativeInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choice) => {
+      if (choice.outcome === 'accepted') {
+        console.log('[PWA] User installed via native prompt');
+        if (pwaInstallBtn) pwaInstallBtn.classList.add('hidden');
+      }
+      deferredPrompt = null;
+    });
+  }
 }
 
+// === Panduan iOS (Safari Add to Home Screen) ===
 function showIOSGuide() {
   Swal.fire({
-    title: 'Install on iPhone',
+    title: '📱 Install di iPhone',
     html: `
       <div class="text-left text-sm space-y-3 p-2">
         <p>Aplikasi ini bisa dipasang di iPhone kamu tanpa App Store!</p>
         <div class="flex items-center gap-3">
-           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold">1</div>
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold shrink-0">1</div>
            <p>Tekan tombol <strong>'Share'</strong> (ikon kotak panah atas di bawah Safari).</p>
         </div>
         <div class="flex items-center gap-3">
-           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold">2</div>
-           <p>Pilih menu <strong>'Add to Home Screen'</strong>.</p>
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold shrink-0">2</div>
+           <p>Scroll ke bawah, pilih <strong>'Add to Home Screen'</strong>.</p>
+        </div>
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold shrink-0">3</div>
+           <p>Tekan <strong>'Add'</strong> di pojok kanan atas.</p>
         </div>
       </div>
     `,
@@ -87,24 +66,94 @@ function showIOSGuide() {
   });
 }
 
+// === Panduan untuk browser desktop (Edge, Firefox, dll.) ===
+function showDesktopGuide() {
+  Swal.fire({
+    title: '🖥️ Install Aplikasi Ini',
+    html: `
+      <div class="text-left text-sm space-y-3 p-2">
+        <p>Kamu bisa memasang aplikasi ini langsung dari browser!</p>
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold shrink-0">1</div>
+           <p>Klik ikon <strong>titik tiga (⋮)</strong> atau <strong>menu (≡)</strong> di pojok kanan atas browser.</p>
+        </div>
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold shrink-0">2</div>
+           <p>Pilih <strong>"Install App"</strong>, <strong>"Install Toko Barang"</strong>, atau <strong>"Add to Home Screen"</strong>.</p>
+        </div>
+        <div class="flex items-center gap-3">
+           <div class="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 rounded-lg font-bold shrink-0">3</div>
+           <p>Konfirmasi <strong>'Install'</strong>. Ikon app akan muncul di desktop/home screen!</p>
+        </div>
+      </div>
+    `,
+    icon: 'info',
+    confirmButtonText: 'Oke, Siap!',
+    confirmButtonColor: '#10b981',
+    customClass: { popup: 'rounded-3xl' }
+  });
+}
+
+// === POPUP OTOMATIS: SELALU muncul setelah 3 detik (semua browser) ===
+if (!isStandalone) {
+  // Tombol Install selalu terlihat
+  if (pwaInstallBtn) pwaInstallBtn.classList.remove('hidden');
+
+  // Ubah teks tombol untuk iOS
+  if (isIOS && pwaInstallBtn) {
+    pwaInstallBtn.innerHTML = `
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+      Install App
+    `;
+  }
+
+  // Popup otomatis 3 detik
+  setTimeout(() => {
+    Swal.fire({
+      title: '🚀 Dapatkan Aplikasi!',
+      text: 'Pasang di layar utama HP/Desktop kamu untuk akses instan tanpa buka browser!',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: '✅ Install Sekarang',
+      cancelButtonText: 'Nanti Saja',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#94a3b8',
+      customClass: { popup: 'rounded-3xl' }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if (deferredPrompt) {
+          // Chromium: trigger native install
+          triggerNativeInstall();
+        } else if (isIOS) {
+          // iOS: tampilkan panduan Safari
+          showIOSGuide();
+        } else {
+          // Desktop/browser lain: panduan manual
+          showDesktopGuide();
+        }
+      }
+    });
+  }, 3000);
+} else {
+  // Sudah dalam mode standalone (PWA installed), sembunyikan tombol
+  if (pwaInstallBtn) pwaInstallBtn.classList.add('hidden');
+  console.log('[PWA] Already in standalone mode — Install UI hidden.');
+}
+
+// === Tombol Install (manual click) ===
 if (pwaInstallBtn) {
   pwaInstallBtn.addEventListener('click', () => {
-    if (isIOS) {
-       showIOSGuide();
-    } else if (deferredPrompt) {
-       deferredPrompt.prompt();
+    if (deferredPrompt) {
+      triggerNativeInstall();
+    } else if (isIOS) {
+      showIOSGuide();
     } else {
-       Swal.fire({
-         title: 'Siap Diinstal!',
-         text: 'Gunakan browser Chrome/Safari lalu pilih menu "Install" atau "Add to Home Screen".',
-         icon: 'success',
-         customClass: { popup: 'rounded-3xl' }
-       });
+      showDesktopGuide();
     }
   });
 }
 
-// Service Worker Registration
+// === Service Worker Registration ===
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js')

@@ -1,5 +1,4 @@
 
-open ftpupload.net
 if0_41694521
 Ownwnwn56
 cd htdocs
