@@ -109,30 +109,39 @@ if (!isStandalone) {
 
   // Popup otomatis 3 detik
   setTimeout(() => {
-    Swal.fire({
-      title: '🚀 Dapatkan Aplikasi!',
-      text: 'Pasang di layar utama HP/Desktop kamu untuk akses instan tanpa buka browser!',
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: '✅ Install Sekarang',
-      cancelButtonText: 'Nanti Saja',
-      confirmButtonColor: '#10b981',
-      cancelButtonColor: '#94a3b8',
-      customClass: { popup: 'rounded-3xl' }
-    }).then((result) => {
-      if (result.isConfirmed) {
+    try {
+      if (typeof Swal === 'undefined') throw new Error('Swal not loaded');
+      Swal.fire({
+        title: '🚀 Dapatkan Aplikasi!',
+        text: 'Pasang di layar utama HP/Desktop kamu untuk akses instan tanpa buka browser!',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: '✅ Install Sekarang',
+        cancelButtonText: 'Nanti Saja',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#94a3b8',
+        customClass: { popup: 'rounded-3xl' }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (deferredPrompt) {
+            triggerNativeInstall();
+          } else if (isIOS) {
+            showIOSGuide();
+          } else {
+            showDesktopGuide();
+          }
+        }
+      });
+    } catch (err) {
+      console.warn('[PWA] SweetAlert failed, using fallback:', err);
+      if (window.confirm('Install aplikasi ini ke layar utama? Klik OK untuk panduan instalasi.')) {
         if (deferredPrompt) {
-          // Chromium: trigger native install
           triggerNativeInstall();
-        } else if (isIOS) {
-          // iOS: tampilkan panduan Safari
-          showIOSGuide();
         } else {
-          // Desktop/browser lain: panduan manual
-          showDesktopGuide();
+          alert('Buka menu browser (⋮) -> Pilih "Install App" atau "Add to Home Screen"');
         }
       }
-    });
+    }
   }, 3000);
 } else {
   // Sudah dalam mode standalone (PWA installed), sembunyikan tombol
