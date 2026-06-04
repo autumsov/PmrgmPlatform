@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#0f172a"/>
   
+  <script>
+    // Force HTTPS for InfinityFree to avoid CORS/Mixed Content issues
+    if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      location.href = location.href.replace('http:', 'https:');
+    }
+  </script>
+  
   <!-- Apple PWA Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -101,6 +108,9 @@
             <div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 font-bold overflow-hidden">
                 <img src="https://ui-avatars.com/api/?name=Admin&background=f1f5f9&color=64748b" alt="Avatar">
             </div>
+            <button onclick="window.logout()" class="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-xl transition-all active:scale-95 bg-white border border-red-100" title="Logout">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -281,6 +291,6 @@
     </main>
   </div>
 
-  <script src="app.js?v=8.0.0"></script>
+  <script src="app.js?v=8.0.1"></script>
 </body>
 </html>

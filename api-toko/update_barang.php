@@ -1,4 +1,5 @@
 <?php
+
 // Set header agar browser/client tahu response-nya adalah JSON
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
@@ -19,9 +20,51 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT
 // Sertakan file koneksi database
 require_once 'koneksi.php';
 
+// === Validasi Token (Memakai Database) ===
+$auth_header = '';
+
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
+} else if (function_exists('apache_request_headers')) {
+    $requestHeaders = apache_request_headers();
+    if (isset($requestHeaders['Authorization'])) {
+        $auth_header = $requestHeaders['Authorization'];
+    }
+}
+
+$token = '';
+if (preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
+    $token = $matches[1];
+} else if ($auth_header !== '') {
+    $token = $auth_header;
+}
+
+if ($token === '') {
+    http_response_code(401);
+    echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Kosong.']);
+    exit;
+}
+
+try {
+    $cek_token = $pdo->prepare("SELECT * FROM users WHERE token = :token");
+    $cek_token->bindParam(':token', $token);
+    $cek_token->execute();
+
+    if ($cek_token->rowCount() === 0) {
+        http_response_code(401);
+        echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Invalid.']);
+        exit;
+    }
+} catch (\PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Kesalahan DB saat cek token: ' . $e->getMessage()]);
+    exit;
+}
+// ======================================
+
 try {
     $data_json = json_decode(file_get_contents("php://input"), true);
-    
+
     $id = isset($data_json['id']) ? $data_json['id'] : (isset($_POST['id']) ? $_POST['id'] : '');
     $nama_barang = isset($data_json['nama_barang']) ? $data_json['nama_barang'] : (isset($_POST['nama_barang']) ? $_POST['nama_barang'] : '');
     $harga = isset($data_json['harga']) ? $data_json['harga'] : (isset($_POST['harga']) ? $_POST['harga'] : '');
@@ -40,11 +83,11 @@ try {
 
     $sql = "UPDATE barang SET nama_barang = :nama_barang, harga = :harga WHERE id = :id";
     $stmt = $pdo->prepare($sql);
-    
+
     $stmt->bindParam(':id', $id);
     $stmt->bindParam(':nama_barang', $nama_barang);
     $stmt->bindParam(':harga', $harga);
-    
+
     if ($stmt->execute()) {
         if ($stmt->rowCount() > 0) {
             http_response_code(200); // OK
@@ -58,15 +101,15 @@ try {
                 ]
             ], JSON_PRETTY_PRINT);
         } else {
-             // RowCount 0 might mean the data was exactly the same, or ID not found.
+            // RowCount 0 might mean the data was exactly the same, or ID not found.
             // We can treat it as success if no error occurred, but notify the user
-            http_response_code(200); 
+            http_response_code(200);
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Tidak ada perubahan pada data penyimpan / barang dengan ID tersebut.',
                 'data' => [
                     'id' => $id,
-                     'nama_barang' => $nama_barang,
+                    'nama_barang' => $nama_barang,
                     'harga' => $harga
                 ]
             ], JSON_PRETTY_PRINT);

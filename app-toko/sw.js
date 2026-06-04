@@ -1,4 +1,4 @@
-const CACHE_NAME = 'toko-barang-v6';
+const CACHE_NAME = 'toko-barang-v8';
 
 const ASSETS_TO_CACHE = [
   './',

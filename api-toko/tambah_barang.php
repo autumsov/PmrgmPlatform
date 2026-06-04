@@ -19,6 +19,48 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Sertakan file koneksi database
 require_once 'koneksi.php';
 
+// === Validasi Token (Memakai Database) ===
+$auth_header = '';
+
+if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+    $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
+} else if (function_exists('apache_request_headers')) {
+    $requestHeaders = apache_request_headers();
+    if (isset($requestHeaders['Authorization'])) {
+        $auth_header = $requestHeaders['Authorization'];
+    }
+}
+
+$token = '';
+if (preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
+    $token = $matches[1];
+} else if ($auth_header !== '') {
+    $token = $auth_header;
+}
+
+if ($token === '') {
+    http_response_code(401);
+    echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Kosong.']);
+    exit;
+}
+
+try {
+    $cek_token = $pdo->prepare("SELECT * FROM users WHERE token = :token");
+    $cek_token->bindParam(':token', $token);
+    $cek_token->execute();
+
+    if ($cek_token->rowCount() === 0) {
+        http_response_code(401);
+        echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Invalid.']);
+        exit;
+    }
+} catch (\PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Kesalahan DB saat cek token: ' . $e->getMessage()]);
+    exit;
+}
+// ======================================
+
 try {
     $data_json = json_decode(file_get_contents("php://input"), true);
     

@@ -2,12 +2,40 @@
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const BASE_URL = isLocal 
     ? '../api-toko' 
-    : 'https://tokobarang.free.nf/api-toko'; 
+    : '/api-toko'; 
 
 const API_URL = `${BASE_URL}/get_barang.php`;
 
+// === GUARD PENGECEKAN LOGIN ===
+const API_TOKEN = localStorage.getItem('token_toko');
+if (!API_TOKEN) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Akses Ditolak!',
+            text: 'Anda harus login terlebih dahulu.',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: { popup: 'rounded-3xl' }
+        }).then(() => {
+            window.location.href = 'login.html';
+        });
+    } else {
+        alert('Anda harus login terlebih dahulu!');
+        window.location.href = 'login.html';
+    }
+}
+
+// Tambahkan Fungsi Logout ke global scope
+window.logout = function() {
+    localStorage.removeItem('token_toko');
+    window.location.href = 'login.html';
+};
+// ===============================
+
 // === 2. PWA INSTALLATION LOGIC (RUNS FIRST) ===
-console.log('[PWA] UI Version 8.0.0 Loaded');
+console.log('[PWA] UI Version 8.0.1 Loaded');
 
 let deferredPrompt;
 const pwaInstallBtn = document.getElementById('pwa-install-btn');
@@ -385,7 +413,10 @@ if(formInline) {
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`
+        },
         body: JSON.stringify(dataObj)
       });
 
@@ -398,12 +429,13 @@ if(formInline) {
       
       if(response.ok && json.status === 'success') {
         Swal.fire({
+          toast: true,
+          position: 'top-end',
           icon: 'success',
-          title: 'Berhasil!',
-          text: editingId ? 'Data berhasil diupdate!' : 'Sukses menambah data baru!',
-          timer: 1500,
+          title: editingId ? 'Barang diupdate!' : 'Barang ditambahkan!',
           showConfirmButton: false,
-          customClass: { popup: 'rounded-3xl' }
+          timer: 2500,
+          timerProgressBar: true
         });
         cancelEdit();
         fetchBarang(); // Refresh data tanpa blinking
@@ -502,7 +534,10 @@ window.deleteBarang = async function(dbId, displayId, nama) {
     try {
       const response = await fetch(`${BASE_URL}/delete_barang.php`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_TOKEN}`
+        },
         body: JSON.stringify({ id: dbId })
       });
       
@@ -515,12 +550,13 @@ window.deleteBarang = async function(dbId, displayId, nama) {
       
       if (response.ok && json.status === 'success') {
         Swal.fire({
+          toast: true,
+          position: 'top-end',
           icon: 'success',
-          title: 'Berhasil!',
-          text: `Produk #${formattedUid} telah dihapus.`,
-          timer: 1500,
+          title: `Produk dihapus!`,
           showConfirmButton: false,
-          customClass: { popup: 'rounded-3xl' }
+          timer: 2500,
+          timerProgressBar: true
         });
         fetchBarang(); // Refresh data table
       } else {

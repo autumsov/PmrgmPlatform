@@ -33,6 +33,13 @@ Aplikasi telah dioptimalkan menjadi PWA sehingga dapat diinstall secara native d
 - **Web Manifest**: Konfigurasi ikon (192, 512) dan skema warna untuk integrasi OS.
 - **Installability**: Muncul tombol "Install App" di Chrome Address Bar (via HTTPS).
 
+## 🔒 Tugas Praktikum Pertemuan 9 — API Security & Token-Based Authentication
+Aplikasi telah menggunakan sistem pengamanan *"Gembok Cerdas"* (Token-based Auth) untuk melindungi API dari akses luar atau pencurian data.
+- **Login Endpoint (`login.php`)**: Memverifikasi kombinasi `username` dan `password` (PDO) melalui database `users`, lalu me-return Token autentikasi unik.
+- **Frontend Guard**: Skrip `app.js` memeriksa keberadaan *token* pada `localStorage`. Jika kosong, _user_ diusir secara otomatis (Redirect) menuju `login.html`.
+- **API Lockdown**: Akses mutasi data (`tambah_barang.php`, `update_barang.php`, `delete_barang.php`) sekarang membutuhkan Header `Authorization: Bearer <TOKEN>`. Token tersebut divalidasi ke dalam Database dan ditolak secara instan (HTTP 401) jika tak sah.
+- **UI Login Aesthetics**: Antarmuka `login.html` dibangun bergaya *premium glassmorphism* lengkap dengan *micro-animations* yang nampak profesional.
+
 ---
 
 ## 🏆 Misi PjBL Selesai (Fullstack API Platform Modern)
