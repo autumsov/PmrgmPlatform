@@ -27,12 +27,6 @@ Aplikasi telah melalui perombakan total UI/UX menjadi sebuah **Inventory Console
 
 ---
 
-## 📱 Tugas Praktikum Pertemuan 4 — Progressive Web App (PWA)
-Aplikasi telah dioptimalkan menjadi PWA sehingga dapat diinstall secara native di Desktop maupun Mobile.
-- **Service Worker (sw.js)**: Mendukung *Offline Caching* (v3) untuk aset inti aplikasi.
-- **Web Manifest**: Konfigurasi ikon (192, 512) dan skema warna untuk integrasi OS.
-- **Installability**: Muncul tombol "Install App" di Chrome Address Bar (via HTTPS).
-
 ## 🔒 Tugas Praktikum Pertemuan 9 — API Security & Token-Based Authentication
 Aplikasi telah menggunakan sistem pengamanan *"Gembok Cerdas"* (Token-based Auth) untuk melindungi API dari akses luar atau pencurian data.
 - **Login Endpoint (`login.php`)**: Memverifikasi kombinasi `username` dan `password` (PDO) melalui database `users`, lalu me-return Token autentikasi unik.
