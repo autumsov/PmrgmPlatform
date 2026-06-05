@@ -25,8 +25,6 @@ $auth_header = '';
 
 if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
     $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
-} else if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-    $auth_header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
 } else if (function_exists('apache_request_headers')) {
     $requestHeaders = apache_request_headers();
     if (isset($requestHeaders['Authorization'])) {
@@ -43,7 +41,7 @@ if (preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
 
 if ($token === '') {
     http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak!']);
+    echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Kosong.']);
     exit;
 }
 
@@ -54,7 +52,7 @@ try {
 
     if ($cek_token->rowCount() === 0) {
         http_response_code(401);
-        echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak!']);
+        echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Invalid.']);
         exit;
     }
 } catch (\PDOException $e) {

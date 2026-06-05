@@ -9,37 +9,28 @@ const API_URL = `${BASE_URL}/get_barang.php`;
 // === GUARD PENGECEKAN LOGIN ===
 const API_TOKEN = localStorage.getItem('token_toko');
 if (!API_TOKEN) {
-    // Redirect langsung + parameter untuk notifikasi keamanan di halaman login
-    window.location.replace('login.html?denied=1');
-    throw new Error('[Auth] No token found — redirecting to login.');
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Akses Ditolak!',
+            text: 'Anda harus login terlebih dahulu.',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            timer: 2000,
+            customClass: { popup: 'rounded-3xl' }
+        }).then(() => {
+            window.location.href = 'login.html';
+        });
+    } else {
+        alert('Anda harus login terlebih dahulu!');
+        window.location.href = 'login.html';
+    }
 }
 
 // Tambahkan Fungsi Logout ke global scope
-window.logout = async function() {
-    const result = await Swal.fire({
-        icon: 'question',
-        title: 'Yakin Logout?',
-        text: 'Sesi Anda akan diakhiri dan Anda harus login kembali.',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Logout',
-        cancelButtonText: 'Batal',
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#94a3b8',
-        customClass: { popup: 'rounded-3xl' }
-    });
-
-    if (result.isConfirmed) {
-        localStorage.removeItem('token_toko');
-        await Swal.fire({
-            icon: 'success',
-            title: 'Berhasil Logout!',
-            text: 'Anda telah keluar dari sistem dengan aman.',
-            timer: 1500,
-            showConfirmButton: false,
-            customClass: { popup: 'rounded-3xl' }
-        });
-        window.location.replace('login.html');
-    }
+window.logout = function() {
+    localStorage.removeItem('token_toko');
+    window.location.href = 'login.html';
 };
 // ===============================
 
@@ -590,47 +581,4 @@ window.deleteBarang = async function(dbId, displayId, nama) {
 // ===== INIT =====
 fetchBarang();
 
-// === 4. REAL-TIME AUTO-POLLING LOGIC ===
-// Update data secara otomatis setiap 5 detik jika tab sedang aktif
-let pollingInterval = setInterval(() => {
-    // Only fetch if tab is visible to save battery/data
-    if (document.visibilityState === 'visible') {
-        const syncStatus = document.querySelector('.animate-pulse');
-        if (syncStatus) {
-            syncStatus.classList.replace('bg-emerald-500', 'bg-blue-500');
-            setTimeout(() => syncStatus.classList.replace('bg-blue-500', 'bg-emerald-500'), 1500);
-        }
-        
-        // Quietly fetch without showing the full-screen loading state
-        fetchDataQuietly();
-    }
-}, 5000);
-
-// Helper untuk fetch tanpa mengganggu UI (tanpa spinner tengah)
-async function fetchDataQuietly() {
-    try {
-        const response = await fetch(API_URL);
-        if (response.ok) {
-            const json = await response.json();
-            if (json.status === 'success') {
-                allData = (json.data || []).map((item, idx) => ({ ...item, displayId: idx + 1 }));
-                updateStats(allData);
-                // Hanya update tabel jika user tidak sedang mengetik di search atau mengedit
-                if (!searchInput.value.trim() && !editingId) {
-                    renderTable(allData);
-                    const now = new Date().toLocaleTimeString('id-ID');
-                    footerInfoEl.textContent = `✓ Auto-Synced · ${now}`;
-                }
-            }
-        }
-    } catch (e) {
-        console.warn('[Polling] Background sync failed');
-    }
-}
-
-// Handler untuk visibility change
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-        fetchDataQuietly();
-    }
-});
+// (PWA Logic moved to top)

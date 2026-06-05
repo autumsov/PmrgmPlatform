@@ -1,11 +1,9 @@
-const CACHE_NAME = 'toko-barang-v10';
+const CACHE_NAME = 'toko-barang-v8';
 
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './login.html',
   './app.js',
-  './style.css',
   './icons/icon-192x192.png',
   './icons/icon-512x512.png',
   './manifest.json'
@@ -13,7 +11,7 @@ const ASSETS_TO_CACHE = [
 
 // ===== INSTALL: Pre-cache app shell =====
 self.addEventListener('install', (event) => {
-  console.log('[SW] Install — caching app shell v10');
+  console.log('[SW] Install — caching app shell');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(ASSETS_TO_CACHE))
@@ -35,23 +33,16 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ===== Helper: Cek apakah request adalah halaman HTML =====
-function isHTMLRequest(request) {
-  const url = new URL(request.url);
-  const path = url.pathname;
-  // Halaman HTML: root, atau diakhiri .html
-  return request.mode === 'navigate' || path.endsWith('.html') || path.endsWith('/');
-}
-
-// ===== FETCH: Network-first untuk HTML & API, Cache-first untuk aset statis =====
+// ===== FETCH: Cache-first for assets, network-first for API =====
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Network-first for API calls
+  // Network-first for API calls (Don't cache if not JSON/Success)
   if (url.pathname.includes('/api-toko/')) {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
+          // Hanya cache jika response sukses dan bertipe JSON
           const contentType = response.headers.get('content-type');
           if (response.ok && contentType && contentType.includes('application/json')) {
             const clone = response.clone();
@@ -64,28 +55,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for HTML pages (agar auth guard selalu berjalan dengan versi terbaru)
-  if (isHTMLRequest(event.request)) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request, { ignoreSearch: true }))
-    );
-    return;
-  }
-
-  // Cache-first for static assets (JS, CSS, images, fonts, etc.)
+  // Cache-first for everything else
   event.respondWith(
     caches.match(event.request, { ignoreSearch: true })
       .then((cached) => {
         if (cached) return cached;
         return fetch(event.request).then((response) => {
+          // Dynamic Cache untuk eksternal script/CSS (Tailwind, Fonts, dll)
           if (event.request.method === 'GET' && (response.ok || response.type === 'opaque')) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));

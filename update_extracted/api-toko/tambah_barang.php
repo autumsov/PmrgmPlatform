@@ -1,9 +1,8 @@
 <?php
-
 // Set header agar browser/client tahu response-nya adalah JSON
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, PUT, OPTIONS');
+header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -11,9 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['status' => 'error', 'message' => 'Method not allowed. Use POST or PUT.']);
+    echo json_encode(['status' => 'error', 'message' => 'Method not allowed. Use POST.']);
     exit;
 }
 
@@ -25,8 +24,6 @@ $auth_header = '';
 
 if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
     $auth_header = $_SERVER['HTTP_AUTHORIZATION'];
-} else if (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-    $auth_header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
 } else if (function_exists('apache_request_headers')) {
     $requestHeaders = apache_request_headers();
     if (isset($requestHeaders['Authorization'])) {
@@ -43,7 +40,7 @@ if (preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
 
 if ($token === '') {
     http_response_code(401);
-    echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak!']);
+    echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Kosong.']);
     exit;
 }
 
@@ -54,7 +51,7 @@ try {
 
     if ($cek_token->rowCount() === 0) {
         http_response_code(401);
-        echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak!']);
+        echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak! Token Invalid.']);
         exit;
     }
 } catch (\PDOException $e) {
@@ -66,14 +63,13 @@ try {
 
 try {
     $data_json = json_decode(file_get_contents("php://input"), true);
-
-    $id = isset($data_json['id']) ? $data_json['id'] : (isset($_POST['id']) ? $_POST['id'] : '');
+    
     $nama_barang = isset($data_json['nama_barang']) ? $data_json['nama_barang'] : (isset($_POST['nama_barang']) ? $_POST['nama_barang'] : '');
     $harga = isset($data_json['harga']) ? $data_json['harga'] : (isset($_POST['harga']) ? $_POST['harga'] : '');
 
-    if (empty($id) || empty($nama_barang) || empty($harga)) {
+    if (empty($nama_barang) || empty($harga)) {
         http_response_code(400); // Bad Request
-        echo json_encode(['status' => 'error', 'message' => 'Parameter id, nama_barang, dan harga tidak boleh kosong.']);
+        echo json_encode(['status' => 'error', 'message' => 'Parameter nama_barang dan harga tidak boleh kosong.']);
         exit;
     }
 
@@ -83,45 +79,28 @@ try {
         exit;
     }
 
-    $sql = "UPDATE barang SET nama_barang = :nama_barang, harga = :harga WHERE id = :id";
+    $sql = "INSERT INTO barang (nama_barang, harga) VALUES (:nama_barang, :harga)";
     $stmt = $pdo->prepare($sql);
-
-    $stmt->bindParam(':id', $id);
+    
     $stmt->bindParam(':nama_barang', $nama_barang);
     $stmt->bindParam(':harga', $harga);
-
+    
     if ($stmt->execute()) {
-        if ($stmt->rowCount() > 0) {
-            http_response_code(200); // OK
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Data barang berhasil diupdate!',
-                'data' => [
-                    'id' => $id,
-                    'nama_barang' => $nama_barang,
-                    'harga' => $harga
-                ]
-            ], JSON_PRETTY_PRINT);
-        } else {
-            // RowCount 0 might mean the data was exactly the same, or ID not found.
-            // We can treat it as success if no error occurred, but notify the user
-            http_response_code(200);
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Tidak ada perubahan pada data penyimpan / barang dengan ID tersebut.',
-                'data' => [
-                    'id' => $id,
-                    'nama_barang' => $nama_barang,
-                    'harga' => $harga
-                ]
-            ], JSON_PRETTY_PRINT);
-        }
-
+        http_response_code(201); // Created
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Data barang berhasil ditambahkan!',
+            'data' => [
+                'id' => $pdo->lastInsertId(),
+                'nama_barang' => $nama_barang,
+                'harga' => $harga
+            ]
+        ], JSON_PRETTY_PRINT);
     } else {
         http_response_code(500); // Internal Server Error
         echo json_encode([
             'status' => 'error',
-            'message' => 'Gagal mengupdate data di database.'
+            'message' => 'Gagal menyimpan data ke database.'
         ]);
     }
 } catch (\PDOException $e) {
