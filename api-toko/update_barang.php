@@ -83,12 +83,30 @@ try {
         exit;
     }
 
-    $sql = "UPDATE barang SET nama_barang = :nama_barang, harga = :harga WHERE id = :id";
+    // Upload handling
+    $gambar = null;
+    $gambar_query = "";
+    if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = __DIR__ . '/uploads/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        $file_name = time() . '_' . basename($_FILES['gambar']['name']);
+        if (move_uploaded_file($_FILES['gambar']['tmp_name'], $upload_dir . $file_name)) {
+            $gambar = $file_name;
+            $gambar_query = ", gambar = :gambar";
+        }
+    }
+
+    $sql = "UPDATE barang SET nama_barang = :nama_barang, harga = :harga" . $gambar_query . " WHERE id = :id";
     $stmt = $pdo->prepare($sql);
 
     $stmt->bindParam(':id', $id);
     $stmt->bindParam(':nama_barang', $nama_barang);
     $stmt->bindParam(':harga', $harga);
+    if ($gambar) {
+        $stmt->bindParam(':gambar', $gambar);
+    }
 
     if ($stmt->execute()) {
         if ($stmt->rowCount() > 0) {

@@ -81,11 +81,25 @@ try {
         exit;
     }
 
-    $sql = "INSERT INTO barang (nama_barang, harga) VALUES (:nama_barang, :harga)";
+    // Upload handling
+    $gambar = null;
+    if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
+        $upload_dir = __DIR__ . '/uploads/';
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+        $file_name = time() . '_' . basename($_FILES['gambar']['name']);
+        if (move_uploaded_file($_FILES['gambar']['tmp_name'], $upload_dir . $file_name)) {
+            $gambar = $file_name;
+        }
+    }
+
+    $sql = "INSERT INTO barang (nama_barang, harga, gambar) VALUES (:nama_barang, :harga, :gambar)";
     $stmt = $pdo->prepare($sql);
     
     $stmt->bindParam(':nama_barang', $nama_barang);
     $stmt->bindParam(':harga', $harga);
+    $stmt->bindParam(':gambar', $gambar);
     
     if ($stmt->execute()) {
         http_response_code(201); // Created
@@ -95,7 +109,8 @@ try {
             'data' => [
                 'id' => $pdo->lastInsertId(),
                 'nama_barang' => $nama_barang,
-                'harga' => $harga
+                'harga' => $harga,
+                'gambar' => $gambar
             ]
         ], JSON_PRETTY_PRINT);
     } else {

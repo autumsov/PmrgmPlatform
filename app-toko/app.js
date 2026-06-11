@@ -256,13 +256,14 @@ function renderTable(data) {
     const harga      = item.harga        || item.price || 0;
     const realId     = item.id           || item.id_barang || (index + 1);
     const displayId  = item.displayId    || (index + 1);
+    const gambar     = item.gambar       || null;
 
     tr.innerHTML = `
       <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400 font-mono">#${String(displayId).padStart(3,'0')}</td>
       <td class="px-6 py-4 whitespace-nowrap">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
-            ${nama.charAt(0).toUpperCase()}
+          <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs border border-gray-200 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors overflow-hidden">
+            ${gambar ? `<img src="${BASE_URL}/uploads/${gambar}" class="w-full h-full object-cover">` : nama.charAt(0).toUpperCase()}
           </div>
           <div>
             <span class="block text-sm font-bold text-gray-800 tracking-tight">${nama}</span>
@@ -411,22 +412,20 @@ if(formInline) {
     if(submitInlineSpinner) submitInlineSpinner.classList.remove('hidden');
     
     const formData = new FormData(formInline);
-    const dataObj = Object.fromEntries(formData.entries());
 
     let apiUrl = INLINE_API_URL;
     if (editingId) {
       apiUrl = UPDATE_API_URL;
-      dataObj.id = editingId;
+      formData.append('id', editingId);
     }
 
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${API_TOKEN}`
         },
-        body: JSON.stringify(dataObj)
+        body: formData
       });
 
       const contentType = response.headers.get('content-type');
