@@ -219,13 +219,24 @@ const footerInfoEl  = document.getElementById('footer-info');
 const searchInput   = document.getElementById('search-input');
 const btnRefresh    = document.getElementById('btn-refresh');
 
+// Pagination DOM
+const paginationBar  = document.getElementById('pagination-bar');
+const paginationInfo = document.getElementById('pagination-info');
+const btnPrev        = document.getElementById('btn-prev');
+const btnNext        = document.getElementById('btn-next');
+const pageDots       = document.getElementById('page-dots');
+
 // Stats
 const statTotal = document.getElementById('stat-total');
 const statAvg   = document.getElementById('stat-avg');
 
 // ===== STATE =====
-let allData = [];
-let editingId = null; // Menyimpan ID data yang sedang diedit
+let allData       = [];
+let editingId     = null;   // ID data yang sedang diedit
+let currentPage   = 1;      // Halaman aktif saat ini
+let totalPages    = 1;      // Total halaman dari server
+let totalData     = 0;      // Total item keseluruhan
+let currentSearch = '';     // Kata kunci pencarian aktif
 
 // ===== HELPER: Format Rupiah =====
 function formatRupiah(angka) {
@@ -315,35 +326,50 @@ function showState(state) {
   if (state === 'empty')   { emptyEl.classList.remove('hidden');   emptyEl.classList.add('flex'); }
 }
 
-// ===== FETCH DATA =====
-async function fetchBarang() {
+// ===== FETCH DATA (Server-Side: cari + page) =====
+async function fetchBarang(page = 1, cari = '') {
+  // Update state
+  currentPage   = page;
+  currentSearch = cari;
+
   showState('loading');
+  paginationBar.classList.add('hidden');
   footerInfoEl.textContent = '';
   btnRefresh.disabled = true;
   btnRefresh.classList.add('opacity-60');
 
   try {
-    const response = await fetch(API_URL);
+    // Bangun URL dengan parameter cari & page
+    const params = new URLSearchParams({ page: currentPage, limit: 5 });
+    if (currentSearch) params.append('cari', currentSearch);
+    const url = `${API_URL}?${params.toString()}`;
+
+    const response = await fetch(url);
     const contentType = response.headers.get('content-type');
-    
+
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     if (!contentType || !contentType.includes('application/json')) {
       throw new Error('Server tidak mengirim data JSON. Silakan refresh halaman (F5) untuk melewati sistem keamanan hosting.');
     }
 
     const json = await response.json();
-
     if (json.status !== 'success') throw new Error(json.message || 'Response tidak valid');
 
-    allData = (json.data || []).map((item, idx) => ({
+    // Simpan data halaman ini & metadata paginasi
+    allData    = (json.data || []).map((item, idx) => ({
       ...item,
-      displayId: idx + 1
+      displayId: (currentPage - 1) * 5 + idx + 1  // nomor urut global
     }));
+    totalPages = json.pagination?.total_pages ?? 1;
+    totalData  = json.pagination?.total_data  ?? allData.length;
+
     updateStats(allData);
     renderTable(allData);
+    renderPagination();
 
     const now = new Date().toLocaleTimeString('id-ID');
-    footerInfoEl.textContent = `✓ ${allData.length} data berhasil dimuat · Terakhir diperbarui: ${now}`;
+    footerInfoEl.textContent =
+      `✓ Menampilkan ${allData.length} dari ${totalData} data · Halaman ${currentPage}/${totalPages} · ${now}`;
 
   } catch (err) {
     showState('error');
@@ -355,27 +381,72 @@ async function fetchBarang() {
   }
 }
 
-// ===== SEARCH =====
-searchInput.addEventListener('input', () => {
-  const q = searchInput.value.toLowerCase().trim();
-  if (!q) { 
-    renderTable(allData); 
-    updateStats(allData);
-    return; 
+// ===== RENDER PAGINASI =====
+function renderPagination() {
+  if (totalPages <= 1) {
+    paginationBar.classList.add('hidden');
+    return;
   }
-  const filtered = allData.filter(item => {
-    const nama = (item.nama_barang || item.nama || item.name || '').toLowerCase();
-    const kat  = (item.kategori || item.category || '').toLowerCase();
-    return nama.includes(q) || kat.includes(q);
-  });
-  renderTable(filtered);
-  updateStats(filtered);
+
+  // Tampilkan bar
+  paginationBar.classList.remove('hidden');
+
+  // Info teks
+  const start = (currentPage - 1) * 5 + 1;
+  const end   = Math.min(currentPage * 5, totalData);
+  paginationInfo.textContent =
+    `Menampilkan ${start}–${end} dari ${totalData} item · Halaman ${currentPage} dari ${totalPages}`;
+
+  // === Tombol Prev ===
+  btnPrev.disabled = (currentPage <= 1);
+
+  // === Tombol Next ===
+  btnNext.disabled = (currentPage >= totalPages);
+
+  // === Page dots (number pills) ===
+  pageDots.innerHTML = '';
+  const maxDots = 5;
+  let startDot = Math.max(1, currentPage - Math.floor(maxDots / 2));
+  let endDot   = Math.min(totalPages, startDot + maxDots - 1);
+  if (endDot - startDot < maxDots - 1) startDot = Math.max(1, endDot - maxDots + 1);
+
+  for (let i = startDot; i <= endDot; i++) {
+    const btn = document.createElement('button');
+    const isActive = i === currentPage;
+    btn.textContent = i;
+    btn.className = isActive
+      ? 'w-8 h-8 rounded-lg text-xs font-extrabold bg-blue-600 text-white shadow shadow-blue-500/30 scale-110 transition-all'
+      : 'w-8 h-8 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-100 transition-all';
+    btn.disabled = isActive;
+    btn.addEventListener('click', () => fetchBarang(i, currentSearch));
+    pageDots.appendChild(btn);
+  }
+}
+
+// ===== SEARCH — onkeyup: real-time, reset ke halaman 1 =====
+let searchDebounceTimer = null;
+searchInput.addEventListener('keyup', () => {
+  // Debounce 300ms agar tidak terlalu banyak request saat mengetik cepat
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => {
+    const q = searchInput.value.trim();
+    fetchBarang(1, q);  // Selalu mulai dari halaman 1 saat pencarian baru
+  }, 300);
+});
+
+// ===== TOMBOL PREV / NEXT =====
+btnPrev.addEventListener('click', () => {
+  if (currentPage > 1) fetchBarang(currentPage - 1, currentSearch);
+});
+
+btnNext.addEventListener('click', () => {
+  if (currentPage < totalPages) fetchBarang(currentPage + 1, currentSearch);
 });
 
 // ===== REFRESH BUTTON =====
 btnRefresh.addEventListener('click', () => {
   searchInput.value = '';
-  fetchBarang();
+  fetchBarang(1, '');  // Reset ke halaman 1 tanpa filter
 });
 
 // ===== HIDE MODAL LOGIC (We are no longer using this full-page modal) =====
@@ -606,19 +677,34 @@ let pollingInterval = setInterval(() => {
 }, 5000);
 
 // Helper untuk fetch tanpa mengganggu UI (tanpa spinner tengah)
+// Menghormati halaman & kata kunci yang sedang aktif
 async function fetchDataQuietly() {
+    // Jangan sync jika user sedang mengedit data
+    if (editingId) return;
+
     try {
-        const response = await fetch(API_URL);
+        const params = new URLSearchParams({ page: currentPage, limit: 5 });
+        if (currentSearch) params.append('cari', currentSearch);
+        const url = `${API_URL}?${params.toString()}`;
+
+        const response = await fetch(url);
         if (response.ok) {
             const json = await response.json();
             if (json.status === 'success') {
-                allData = (json.data || []).map((item, idx) => ({ ...item, displayId: idx + 1 }));
+                allData    = (json.data || []).map((item, idx) => ({
+                    ...item,
+                    displayId: (currentPage - 1) * 5 + idx + 1
+                }));
+                totalPages = json.pagination?.total_pages ?? 1;
+                totalData  = json.pagination?.total_data  ?? allData.length;
+
                 updateStats(allData);
-                // Hanya update tabel jika user tidak sedang mengetik di search atau mengedit
-                if (!searchInput.value.trim() && !editingId) {
+                // Hanya render ulang jika user tidak sedang mengetik
+                if (!searchInput.value.trim() || searchInput.value.trim() === currentSearch) {
                     renderTable(allData);
+                    renderPagination();
                     const now = new Date().toLocaleTimeString('id-ID');
-                    footerInfoEl.textContent = `✓ Auto-Synced · ${now}`;
+                    footerInfoEl.textContent = `✓ Auto-Synced · Hlm ${currentPage}/${totalPages} · ${now}`;
                 }
             }
         }
