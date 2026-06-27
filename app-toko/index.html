@@ -16,10 +16,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Toko PWA">
-  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
   <title>Inventory Admin — Toko Barang</title>
   
   <!-- Preconnect Origins -->
@@ -30,6 +30,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <script>
     tailwind.config = {
@@ -72,15 +73,6 @@
       animation: shine 1.5s infinite linear;
     }
     @keyframes shine { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-    
-    /* Animation for table rows */
-    @keyframes fadeInRow {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .row-fade-in {
-      animation: fadeInRow 0.4s ease-out forwards;
-    }
   </style>
 </head>
 <body class="min-h-screen font-sans bg-gray-50/50">
@@ -259,6 +251,25 @@
         </div>
       </div>
 
+      <!-- Chart Dashboard -->
+      <div class="modern-card p-6 rounded-2xl mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-sm font-bold text-gray-700 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+            Statistik Kontribusi Nilai Barang
+            </h3>
+            <select id="chartTypeSelect" class="text-sm border border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-700 bg-gray-50 px-3 py-1.5 outline-none font-semibold cursor-pointer transition-all">
+                <option value="bar">Bar Chart</option>
+                <option value="pie">Pie Chart</option>
+                <option value="doughnut" selected>Doughnut Chart</option>
+                <option value="line">Line Chart</option>
+            </select>
+        </div>
+        <div class="relative w-full h-64 flex justify-center">
+          <canvas id="inventoryChart"></canvas>
+        </div>
+      </div>
+
       <!-- Main Data Table Container -->
       <div class="modern-card rounded-2xl overflow-hidden border-none">
         <div class="loading-bar opacity-0 group-[.loading]:opacity-100 transition-opacity"></div>
@@ -320,6 +331,25 @@
     </main>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="app.js?v=9.0.0"></script>
+  
+  <script>
+    // GSAP Initial Entry Animations
+    document.addEventListener("DOMContentLoaded", () => {
+      // 1. Sembunyikan elemen sebelum dianimasikan agar tidak berkedip (FOUC)
+      gsap.set("header", { y: -50, opacity: 0 });
+      gsap.set("main > div:nth-of-type(1)", { y: 20, opacity: 0 }); // Title & buttons
+      gsap.set(".modern-card", { y: 30, scale: 0.95, opacity: 0 });
+      gsap.set(".bg-white.border.border-gray-200.rounded-2xl", { y: 20, opacity: 0 }); // Action toolbar
+
+      const tl = gsap.timeline();
+
+      tl.to("header", { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" })
+        .to("main > div:nth-of-type(1)", { y: 0, opacity: 1, duration: 0.6, ease: "power2.out" }, "-=0.4")
+        .to(".modern-card", { y: 0, scale: 1, opacity: 1, duration: 0.5, stagger: 0.1, ease: "back.out(1.2)" }, "-=0.3")
+        .to(".bg-white.border.border-gray-200.rounded-2xl", { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, "-=0.2");
+    });
+  </script>
 </body>
 </html>

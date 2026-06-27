@@ -1,0 +1,32 @@
+body { 
+    margin: 0; padding: 0; min-height: 100vh;
+    background: linear-gradient(135deg, #e0f2f1 0%, #ffffff 50%, #d1f2eb 100%);
+    background-size: 400% 400%; animation: gradientMesh 15s ease infinite;
+    font-family: 'Poppins', sans-serif;
+}
+@keyframes gradientMesh { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* Glassmorphism Utilities */
+.glass { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.8); }
+.glass-card { background: rgba(255, 255, 255, 0.65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 1.25rem; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+.glass-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px 0 rgba(0, 143, 90, 0.15); }
+.glass-nav { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.9); }
+
+/* Custom Radio Buttons */
+.radio-status:checked + label.status-hadir { background: linear-gradient(135deg, #10B981, #059669); color: white; border: none; box-shadow: 0 2px 10px rgba(16,185,129,0.3); }
+.radio-status:checked + label.status-sakit { background: linear-gradient(135deg, #F59E0B, #D97706); color: white; border: none; box-shadow: 0 2px 10px rgba(245,158,11,0.3); }
+.radio-status:checked + label.status-izin { background: linear-gradient(135deg, #3B82F6, #2563EB); color: white; border: none; box-shadow: 0 2px 10px rgba(59,130,246,0.3); }
+.radio-status:checked + label.status-alpa { background: linear-gradient(135deg, #EF4444, #DC2626); color: white; border: none; box-shadow: 0 2px 10px rgba(239,68,68,0.3); }
+
+.hide-scroll-bar::-webkit-scrollbar { display: none; }
+.hide-scroll-bar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Layout logic */
+#mainApp, #loginScreen { transition: opacity 0.3s ease; }
+.toast-animate { animation: slideUpFade 3s forwards; }
+@keyframes slideUpFade { 
+    0%{opacity:0;transform:translateY(20px)} 
+    10%{opacity:1;transform:translateY(0)} 
+    90%{opacity:1;transform:translateY(0)} 
+    100%{opacity:0;transform:translateY(-20px)} 
+}

@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login PWA - TokoKu</title>
     
+    <!-- Apple PWA Tags & Favicon -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Toko PWA">
+    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192x192.png">
     <!-- Preconnect Origins -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -148,6 +155,17 @@
                 btn.disabled = false;
                 btn.classList.remove('opacity-80', 'cursor-not-allowed');
             }
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            gsap.set(".glass-panel", { y: 50, scale: 0.9, opacity: 0 });
+            gsap.set(".animate-blob", { opacity: 0, scale: 0 });
+            
+            const tl = gsap.timeline();
+            tl.to(".animate-blob", { opacity: 0.3, scale: 1, duration: 1.5, stagger: 0.2, ease: "power2.out" })
+              .to(".glass-panel", { y: 0, scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.2)" }, "-=1.2");
         });
     </script>
 </body>

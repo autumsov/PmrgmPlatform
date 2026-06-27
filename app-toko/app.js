@@ -260,8 +260,7 @@ function renderTable(data) {
 
   data.forEach((item, index) => {
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-gray-50/80 transition-colors cursor-default row-fade-in group';
-    tr.style.animationDelay = `${index * 40}ms`;
+    tr.className = 'hover:bg-gray-50/80 transition-colors cursor-default group';
 
     const nama       = item.nama_barang  || item.nama  || item.name  || '—';
     const harga      = item.harga        || item.price || 0;
@@ -296,6 +295,14 @@ function renderTable(data) {
     `;
     tbodyEl.appendChild(tr);
   });
+
+  // GSAP animation for table rows (Staggered fade-in & slide-up)
+  if (typeof gsap !== 'undefined') {
+    gsap.fromTo(tbodyEl.children, 
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out", clearProps: "all" }
+    );
+  }
 }
 
 // ===== UPDATE STATS =====
@@ -719,3 +726,79 @@ document.addEventListener('visibilitychange', () => {
         fetchDataQuietly();
     }
 });
+
+// === 5. CHART.JS LOGIC ===
+let inventoryChartInstance = null;
+let chartDataCache = null; // Caching chart data
+
+async function initChart() {
+    try {
+        const response = await fetch(`${BASE_URL}/statistik.php`);
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) return;
+        
+        const json = await response.json();
+        
+        if (json.status === 'success') {
+            chartDataCache = json; // Caching the data for re-rendering
+            const typeSelect = document.getElementById('chartTypeSelect');
+            const initialType = typeSelect ? typeSelect.value : 'doughnut';
+            renderChart(initialType, json);
+        }
+    } catch (e) {
+        console.error('Error loading chart:', e);
+    }
+}
+
+function renderChart(type, json) {
+    const ctx = document.getElementById('inventoryChart').getContext('2d');
+    
+    if (inventoryChartInstance) {
+        inventoryChartInstance.destroy(); // Hancurkan instance lama
+    }
+    
+    inventoryChartInstance = new Chart(ctx, {
+        type: type, 
+        data: {
+            labels: json.labels,
+            datasets: [{
+                label: 'Nilai Dasar (Rp)',
+                data: json.values,
+                borderColor: type === 'line' ? '#3b82f6' : '#ffffff',
+                borderWidth: type === 'line' ? 3 : (type === 'bar' ? 0 : 2),
+                hoverOffset: 4,
+                tension: 0.4, // Smooth curve for line charts
+                fill: type === 'line' ? { target: 'origin', above: 'rgba(59, 130, 246, 0.1)' } : false,
+                backgroundColor: type === 'line' ? 'rgba(59, 130, 246, 0.1)' : [
+                    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', 
+                    '#8b5cf6', '#06b6d4', '#f43f5e', '#84cc16'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: (type === 'bar' || type === 'line') ? 'top' : 'right',
+                    labels: {
+                        font: {
+                            family: "'Plus Jakarta Sans', sans-serif",
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Event Listener untuk Select Option
+document.getElementById('chartTypeSelect')?.addEventListener('change', (e) => {
+    if (chartDataCache) {
+        renderChart(e.target.value, chartDataCache);
+    }
+});
+
+// Panggil inisialisasi chart saat aplikasi dimuat
+initChart();
