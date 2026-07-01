@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Laporan - App Toko</title>
+    <style>
+        /* Reset & Base Styles */
+        body {
+            font-family: "Arial", "Helvetica", sans-serif;
+            color: #000;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 25mm 20mm; /* A4 standard margins */
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Kop Surat */
+        .kop-surat {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .kop-surat h1 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        .kop-surat p {
+            margin: 4px 0 0;
+            font-size: 13px;
+        }
+        
+        .garis-ganda {
+            border: 0;
+            border-top: 3px solid #000;
+            border-bottom: 1px solid #000;
+            height: 2px;
+            margin-top: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* Judul Laporan */
+        .laporan-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .laporan-title h2 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            text-decoration: underline;
+        }
+        .laporan-title p {
+            margin: 0;
+            font-size: 12px;
+            color: #444;
+        }
+
+        /* Tabel Tegas */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #000;
+            padding: 10px 12px;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            text-align: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+        .data-table td.nomor {
+            text-align: center;
+            width: 5%;
+        }
+        .data-table td.nama {
+            width: 65%;
+        }
+        .data-table td.harga {
+            text-align: right;
+            width: 30%;
+        }
+        
+        /* Footer Table (Total) */
+        .data-table tfoot td {
+            background-color: #f9f9f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-size: 14px;
+        }
+
+        /* Tanda Tangan */
+        .tanda-tangan {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 40px;
+        }
+        .ttd-box {
+            text-align: center;
+            width: 250px;
+            font-size: 14px;
+        }
+        .ttd-box p.nama-pejabat {
+            margin: 80px 0 0 0;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .ttd-box p.jabatan {
+            margin: 5px 0 0 0;
+        }
+
+        /* Media Print */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .a4-container {
+                width: 100%;
+                min-height: auto;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+            @page {
+                size: A4;
+                margin: 20mm;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="a4-container">
+        <!-- Kop Surat -->
+        <div class="kop-surat">
+            <h1>Toko Elektronik Makmur Sejahtera</h1>
+            <p>Jalan Sudirman No. 45, Kawasan SCBD, Jakarta Pusat, DKI Jakarta 10220</p>
+            <p>Telp: (021) 12345678 | Email: admin@toko-makmur.co.id</p>
+        </div>
+        
+        <hr class="garis-ganda">
+
+        <div class="laporan-title">
+            <h2>Laporan Aset Data Barang</h2>
+            <p>Dicetak pada: <span id="waktu-cetak"></span></p>
+        </div>
+
+        <!-- Tabel Data -->
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="nomor">No</th>
+                    <th class="nama">Nama Barang</th>
+                    <th class="harga">Harga (IDR)</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px;">Memuat data...</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" style="text-align: right; font-weight: bold; text-transform: uppercase;">Total Nilai Aset Keseluruhan</td>
+                    <td style="font-weight: bold; text-align: right;" id="total-aset">Rp 0</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Tanda Tangan -->
+        <div class="tanda-tangan">
+            <div class="ttd-box">
+                <p style="margin: 0;">Jakarta, <span id="tanggal-sekarang"></span></p>
+                <p style="margin: 5px 0 0 0;">Mengetahui,</p>
+                <p class="nama-pejabat">Bpk. Ahmad Subarjo</p>
+                <p class="jabatan">Direktur Utama</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set Tanggal Sekarang
+            const dateObj = new Date();
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            
+            document.getElementById('tanggal-sekarang').textContent = dateObj.toLocaleDateString('id-ID', dateOptions);
+            document.getElementById('waktu-cetak').textContent = dateObj.toLocaleDateString('id-ID', dateOptions) + ' Pukul ' + dateObj.toLocaleTimeString('id-ID', timeOptions);
+
+            fetchDataDanCetak();
+        });
+
+        async function fetchDataDanCetak() {
+            const token = localStorage.getItem('token_toko');
+            if (!token) {
+                alert('Sesi Anda telah habis. Silakan login kembali.');
+                window.close();
+                return;
+            }
+
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const BASE_URL = isLocal ? '../api-toko' : '/api-toko';
+
+            try {
+                // Fetch data dari endpoint cetak
+                const response = await fetch(`${BASE_URL}/cetak_laporan.php`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderData(data.data, data.kalkulasi.total_aset);
+                    
+                    // Beri waktu sejenak agar DOM terender utuh, lalu print
+                    setTimeout(() => {
+                        window.print();
+                    }, 500);
+                } else {
+                    alert('Gagal mengambil data: ' + data.message);
+                    window.close();
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                alert('Terjadi kesalahan jaringan.');
+                window.close();
+            }
+        }
+
+        function renderData(barang, totalAset) {
+            const tableBody = document.getElementById('table-body');
+            tableBody.innerHTML = '';
+
+            const formatter = new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            });
+
+            if (barang.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px;">Tidak ada data barang.</td></tr>';
+            } else {
+                barang.forEach((item, index) => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td class="nomor">${index + 1}</td>
+                        <td class="nama">${item.nama_barang}</td>
+                        <td class="harga">${formatter.format(item.harga)}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
+
+            document.getElementById('total-aset').textContent = formatter.format(totalAset);
+        }
+
+        // Listener setelah selesai print atau saat dialog print ditutup
+        window.addEventListener('afterprint', () => {
+            window.close();
+        });
+    </script>
+</body>
+</html>

@@ -306,18 +306,15 @@ function renderTable(data) {
 }
 
 // ===== UPDATE STATS =====
-function updateStats(data) {
-  if (data.length === 0) {
+function updateStats(totalItems, totalAsset) {
+  if (totalItems === 0) {
     statTotal.textContent = '0';
-    statAvg.textContent   = '-';
+    statAvg.textContent   = 'Rp 0';
     return;
   }
-
-  const hargaList  = data.map(d => parseFloat(d.harga || d.price || 0)).filter(h => !isNaN(h));
-  const totalValue = hargaList.reduce((a,b) => a+b, 0);
   
-  statTotal.textContent = data.length;
-  statAvg.textContent   = formatRupiah(totalValue);
+  statTotal.textContent = totalItems;
+  statAvg.textContent   = formatRupiah(totalAsset);
 }
 
 // ===== SHOW STATE =====
@@ -370,7 +367,7 @@ async function fetchBarang(page = 1, cari = '') {
     totalPages = json.pagination?.total_pages ?? 1;
     totalData  = json.pagination?.total_data  ?? allData.length;
 
-    updateStats(allData);
+    updateStats(totalData, json.pagination?.total_asset || 0);
     renderTable(allData);
     renderPagination();
 
@@ -705,7 +702,7 @@ async function fetchDataQuietly() {
                 totalPages = json.pagination?.total_pages ?? 1;
                 totalData  = json.pagination?.total_data  ?? allData.length;
 
-                updateStats(allData);
+                updateStats(totalData, json.pagination?.total_asset || 0);
                 // Hanya render ulang jika user tidak sedang mengetik
                 if (!searchInput.value.trim() || searchInput.value.trim() === currentSearch) {
                     renderTable(allData);

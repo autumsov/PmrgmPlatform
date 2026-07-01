@@ -15,14 +15,16 @@ try {
     // Pastikan page minimal 1
     if ($page < 1) $page = 1;
 
-    // === HITUNG TOTAL DATA (untuk kalkulasi jumlah halaman) ===
+    // === HITUNG TOTAL DATA & ASET ===
     if ($cari !== '') {
-        $stmtCount = $pdo->prepare('SELECT COUNT(*) FROM barang WHERE nama_barang LIKE :cari');
+        $stmtCount = $pdo->prepare('SELECT COUNT(*) as total_items, COALESCE(SUM(harga), 0) as total_harga FROM barang WHERE nama_barang LIKE :cari');
         $stmtCount->execute([':cari' => '%' . $cari . '%']);
     } else {
-        $stmtCount = $pdo->query('SELECT COUNT(*) FROM barang');
+        $stmtCount = $pdo->query('SELECT COUNT(*) as total_items, COALESCE(SUM(harga), 0) as total_harga FROM barang');
     }
-    $totalData = (int) $stmtCount->fetchColumn();
+    $rowCount = $stmtCount->fetch(PDO::FETCH_ASSOC);
+    $totalData = (int) $rowCount['total_items'];
+    $totalAsset = (float) $rowCount['total_harga'];
 
     // Hitung total halaman (minimal 1 halaman)
     $totalPages = ($totalData > 0) ? (int) ceil($totalData / $perPage) : 1;
@@ -59,6 +61,7 @@ try {
             'per_page'    => $perPage,
             'total_data'  => $totalData,
             'total_pages' => $totalPages,
+            'total_asset' => $totalAsset
         ]
     ], JSON_PRETTY_PRINT);
 
