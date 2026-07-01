@@ -201,6 +201,11 @@
     </div>
 
     <script>
+        // Force HTTPS for InfinityFree to avoid CORS/Mixed Content issues (Sama seperti index.html)
+        if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+          location.href = location.href.replace('http:', 'https:');
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             // Set Tanggal Sekarang
             const dateObj = new Date();
@@ -214,10 +219,12 @@
         });
 
         async function fetchDataDanCetak() {
+            const tableBody = document.getElementById('table-body');
             const token = localStorage.getItem('token_toko');
+            
             if (!token) {
                 alert('Sesi Anda telah habis. Silakan login kembali.');
-                window.close();
+                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: red;">Akses Ditolak. Token sesi tidak ditemukan.</td></tr>';
                 return;
             }
 
@@ -233,9 +240,15 @@
                     }
                 });
 
+                // Menangani blokir dari InfinityFree (response bukan Json)
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Respons bukan JSON (Kemungkinan diblokir sistem keamanan InfinityFree). Refresh halaman (F5) untuk melewati.');
+                }
+
                 const data = await response.json();
 
-                if (data.status === 'success') {
+                if (response.ok && data.status === 'success') {
                     renderData(data.data, data.kalkulasi.total_aset);
                     
                     // Beri waktu sejenak agar DOM terender utuh, lalu print
@@ -243,13 +256,13 @@
                         window.print();
                     }, 500);
                 } else {
+                    tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Gagal: ${data.message}</td></tr>`;
                     alert('Gagal mengambil data: ' + data.message);
-                    window.close();
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
-                alert('Terjadi kesalahan jaringan.');
-                window.close();
+                tableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: red;">Error Jaringan: ${error.message}</td></tr>`;
+                alert('Terjadi kesalahan jaringan atau koneksi diblokir.');
             }
         }
 
@@ -284,7 +297,8 @@
 
         // Listener setelah selesai print atau saat dialog print ditutup
         window.addEventListener('afterprint', () => {
-            window.close();
+            // Jangan otomatis menutup jika ada masalah atau user sekadar cancel print
+            // Biarkan user melihat data form atau hasil print jika dibutuhkan
         });
     </script>
 </body>
