@@ -233,7 +233,7 @@
 
             try {
                 // Fetch data dari endpoint cetak
-                const response = await fetch(`${BASE_URL}/cetak_laporan.php`, {
+                const response = await fetch(`${BASE_URL}/cetak_laporan.php?token=${token}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`

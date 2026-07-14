@@ -504,6 +504,9 @@ if(formInline) {
       apiUrl = UPDATE_API_URL;
       formData.append('id', editingId);
     }
+    
+    // Tambakan token ke FormData sebagai fallback jika header Authorization dihapus hosting
+    formData.append('token', API_TOKEN);
 
     try {
       const response = await fetch(apiUrl, {
@@ -639,7 +642,7 @@ window.deleteBarang = async function(dbId, displayId, nama) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${API_TOKEN}`
         },
-        body: JSON.stringify({ id: dbId })
+        body: JSON.stringify({ id: dbId, token: API_TOKEN })
       });
       
       const contentType = response.headers.get('content-type');

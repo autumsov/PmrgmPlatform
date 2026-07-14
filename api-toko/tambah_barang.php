@@ -41,6 +41,19 @@ if (preg_match('/Bearer\s(\S+)/', $auth_header, $matches)) {
 }
 
 if ($token === '') {
+    if (isset($_POST['token'])) {
+        $token = $_POST['token'];
+    } elseif (isset($_GET['token'])) {
+        $token = $_GET['token'];
+    } else {
+        $json_input = json_decode(file_get_contents("php://input"), true);
+        if (isset($json_input['token'])) {
+            $token = $json_input['token'];
+        }
+    }
+}
+
+if ($token === '') {
     http_response_code(401);
     echo json_encode(['status' => 'error', 'message' => 'Akses Ditolak!']);
     exit;
