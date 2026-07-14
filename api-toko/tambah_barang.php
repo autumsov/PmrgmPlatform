@@ -143,6 +143,19 @@ try {
         ]);
     }
 } catch (\PDOException $e) {
+    // Auto-migrate if column not found
+    if (strpos($e->getMessage(), "Unknown column 'kode_qr'") !== false || strpos($e->getMessage(), "Unknown column") !== false) {
+        try {
+            $pdo->exec("ALTER TABLE barang ADD COLUMN kode_qr VARCHAR(255) NULL, ADD COLUMN latitude VARCHAR(50) NULL, ADD COLUMN longitude VARCHAR(50) NULL;");
+            http_response_code(500); 
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Sistem telah memperbarui database otomatis (Menambah kolom QR). Silakan coba klik Simpan sekali lagi!'
+            ]);
+            exit;
+        } catch (\Exception $ex) {}
+    }
+
     http_response_code(500); // Internal Server Error
     echo json_encode([
         'status' => 'error',
