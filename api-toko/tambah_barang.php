@@ -68,6 +68,9 @@ try {
     
     $nama_barang = isset($data_json['nama_barang']) ? $data_json['nama_barang'] : (isset($_POST['nama_barang']) ? $_POST['nama_barang'] : '');
     $harga = isset($data_json['harga']) ? $data_json['harga'] : (isset($_POST['harga']) ? $_POST['harga'] : '');
+    $kode_qr = isset($data_json['kode_qr']) ? $data_json['kode_qr'] : (isset($_POST['kode_qr']) ? $_POST['kode_qr'] : null);
+    $latitude = isset($data_json['latitude']) ? $data_json['latitude'] : (isset($_POST['latitude']) ? $_POST['latitude'] : null);
+    $longitude = isset($data_json['longitude']) ? $data_json['longitude'] : (isset($_POST['longitude']) ? $_POST['longitude'] : null);
 
     if (empty($nama_barang) || empty($harga)) {
         http_response_code(400); // Bad Request
@@ -94,12 +97,15 @@ try {
         }
     }
 
-    $sql = "INSERT INTO barang (nama_barang, harga, gambar) VALUES (:nama_barang, :harga, :gambar)";
+    $sql = "INSERT INTO barang (nama_barang, harga, gambar, kode_qr, latitude, longitude) VALUES (:nama_barang, :harga, :gambar, :kode_qr, :latitude, :longitude)";
     $stmt = $pdo->prepare($sql);
     
     $stmt->bindParam(':nama_barang', $nama_barang);
     $stmt->bindParam(':harga', $harga);
     $stmt->bindParam(':gambar', $gambar);
+    $stmt->bindParam(':kode_qr', $kode_qr);
+    $stmt->bindParam(':latitude', $latitude);
+    $stmt->bindParam(':longitude', $longitude);
     
     if ($stmt->execute()) {
         http_response_code(201); // Created
@@ -110,7 +116,10 @@ try {
                 'id' => $pdo->lastInsertId(),
                 'nama_barang' => $nama_barang,
                 'harga' => $harga,
-                'gambar' => $gambar
+                'gambar' => $gambar,
+                'kode_qr' => $kode_qr,
+                'latitude' => $latitude,
+                'longitude' => $longitude
             ]
         ], JSON_PRETTY_PRINT);
     } else {

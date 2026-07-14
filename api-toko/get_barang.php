@@ -9,8 +9,21 @@ require_once 'koneksi.php';
 try {
     // === PARAMETER PENCARIAN & PAGINASI ===
     $cari    = isset($_GET['cari'])  ? trim($_GET['cari'])  : '';
+    $kode_qr = isset($_GET['kode_qr']) ? trim($_GET['kode_qr']) : '';
     $page    = isset($_GET['page'])  ? (int) $_GET['page']  : 1;
     $perPage = isset($_GET['limit']) ? (int) $_GET['limit'] : 5; // Default 5 item per halaman
+
+    if ($kode_qr !== '') {
+        $stmt = $pdo->prepare('SELECT * FROM barang WHERE kode_qr = :kode_qr LIMIT 1');
+        $stmt->execute([':kode_qr' => $kode_qr]);
+        $barang = $stmt->fetch();
+        if ($barang) {
+            echo json_encode(['status' => 'success', 'data' => $barang]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Barang tidak ditemukan']);
+        }
+        exit;
+    }
 
     // Pastikan page minimal 1
     if ($page < 1) $page = 1;

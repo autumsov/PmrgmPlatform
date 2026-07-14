@@ -267,6 +267,14 @@ function renderTable(data) {
     const realId     = item.id           || item.id_barang || (index + 1);
     const displayId  = item.displayId    || (index + 1);
     const gambar     = item.gambar       || null;
+    const kode_qr    = item.kode_qr      || '';
+    const lat        = item.latitude     || '';
+    const lng        = item.longitude    || '';
+
+    let btnLokasi = `<span class="text-xs text-gray-300">-</span>`;
+    if (lat && lng) {
+        btnLokasi = `<a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-600 rounded-md font-bold hover:bg-blue-100 transition hover:text-blue-700 text-xs shadow-sm"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg> Peta</a>`;
+    }
 
     tr.innerHTML = `
       <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-400 font-mono">#${String(displayId).padStart(3,'0')}</td>
@@ -277,12 +285,15 @@ function renderTable(data) {
           </div>
           <div>
             <span class="block text-sm font-bold text-gray-800 tracking-tight">${nama}</span>
-            <span class="block text-[10px] text-gray-400 uppercase tracking-widest font-bold">Standard SKU</span>
+            <span class="block text-[10px] text-gray-400 uppercase tracking-widest font-bold">Standard SKU ${kode_qr ? `· QR: ${kode_qr}` : ''}</span>
           </div>
         </div>
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900 text-sm">
         ${formatRupiah(harga)}
+      </td>
+      <td class="px-6 py-4 whitespace-nowrap text-center">
+        ${btnLokasi}
       </td>
       <td class="px-6 py-4 whitespace-nowrap text-center flex items-center justify-center gap-2">
         <button onclick="editBarang('${realId}')" class="text-gray-300 hover:text-blue-500 hover:bg-blue-50 p-2 rounded-xl transition-all active:scale-90" title="Edit Item">
@@ -551,6 +562,13 @@ window.editBarang = function(id) {
   editingId = item.id || item.id_barang;
   inlineNama.value = item.nama_barang || item.nama || item.name || '';
   inlineHarga.value = item.harga || item.price || '';
+  
+  const inKodeQr = document.getElementById('inline-kode_qr');
+  if(inKodeQr) inKodeQr.value = item.kode_qr || '';
+  const inLat = document.getElementById('inline-latitude');
+  if(inLat) inLat.value = item.latitude || '';
+  const inLng = document.getElementById('inline-longitude');
+  if(inLng) inLng.value = item.longitude || '';
 
   // Tampilkan form jika sedang disembunyikan
   if(formInlineWrapper) {
@@ -799,3 +817,338 @@ document.getElementById('chartTypeSelect')?.addEventListener('change', (e) => {
 
 // Panggil inisialisasi chart saat aplikasi dimuat
 initChart();
+
+// ================================================
+// ===== PERTEMUAN 14: SMART QR GATEWAY GUDANG =====
+// ================================================
+
+// ===== 6. FUNGSI GEOLOKASI (GPS) =====
+// Menggunakan HTML5 Geolocation API untuk mendapatkan koordinat pengguna
+window.dapatkanLokasi = function() {
+    // Cek dukungan browser
+    if (!navigator.geolocation) {
+        Swal.fire({ icon: 'error', title: 'Tidak Didukung', text: 'Browser ini tidak mendukung Geolocation.' });
+        return;
+    }
+
+    // Referensi tombol GPS untuk feedback visual
+    const btnGps = document.querySelector('button[title="Dapatkan Lokasi GPS"]');
+    if (btnGps) btnGps.textContent = '⏳ Melacak...';
+
+    navigator.geolocation.getCurrentPosition(
+        // SUCCESS: Koordinat didapatkan
+        (pos) => {
+            document.getElementById('inline-latitude').value  = pos.coords.latitude;
+            document.getElementById('inline-longitude').value = pos.coords.longitude;
+            if (btnGps) btnGps.textContent = '✅ Terlacak!';
+            // Reset teks tombol setelah 2 detik
+            setTimeout(() => { if (btnGps) btnGps.textContent = '+ Lacak GPS Saya'; }, 2000);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Lokasi GPS didapatkan!', timer: 1500, showConfirmButton: false });
+        },
+        // ERROR: Gagal mendapatkan koordinat
+        (err) => {
+            if (btnGps) btnGps.textContent = '+ Lacak GPS Saya';
+            Swal.fire({ icon: 'error', title: 'Gagal Melacak', text: 'Izin lokasi ditolak atau GPS tidak tersedia. Pastikan izin lokasi aktif.' });
+            console.error('[GPS] Error:', err.message);
+        },
+        // OPTIONS: Akurasi tinggi, timeout 10 detik
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+};
+
+// ===== 7. QR SCANNER — STATE & VARIABEL GLOBAL =====
+let html5QrCode       = null;   // Instance scanner untuk Modal utama
+let html5QrCodeInline = null;   // Instance scanner untuk form inline
+let isMainScanning    = false;  // Flag: apakah modal scanner sedang aktif
+let isInlineScanning  = false;  // Flag: apakah inline scanner sedang aktif
+let scannedQrCode     = '';     // Menyimpan hasil scan QR terakhir
+
+// ===== 7a. HELPER: Start kamera dengan auto-fallback =====
+// Mencoba kamera belakang ("environment") dulu, jika gagal fallback ke depan ("user")
+function startCameraWithFallback(scannerInstance, elementId, config, onSuccess, onError) {
+    const tryStart = (facingMode) => {
+        scannerInstance.start(
+            { facingMode: facingMode },
+            config,
+            onSuccess,        // Callback saat QR terbaca
+            () => {}          // Error per-frame (diabaikan)
+        ).then(() => {
+            console.log(`[QR] Kamera "${facingMode}" berhasil diaktifkan.`);
+        }).catch((err) => {
+            if (facingMode === 'environment') {
+                console.warn('[QR] Kamera belakang gagal, mencoba kamera depan...');
+                tryStart('user'); // Fallback ke kamera depan (webcam laptop)
+            } else {
+                console.error('[QR] Semua kamera gagal:', err);
+                if (onError) onError(err);
+            }
+        });
+    };
+    tryStart('environment');
+}
+
+// ===== 7b. HELPER: Stop kamera dengan aman =====
+function stopCameraSafely(scannerInstance) {
+    return new Promise((resolve) => {
+        if (!scannerInstance) return resolve();
+        scannerInstance.stop()
+            .then(() => { scannerInstance.clear(); resolve(); })
+            .catch(() => { 
+                try { scannerInstance.clear(); } catch(e) {}
+                resolve(); 
+            });
+    });
+}
+
+// ===== 8. MODAL QR SCANNER (Tombol "Scan QR" header) =====
+
+// Fungsi shared untuk mengecek QR Code ke Server
+window.checkQrInServer = async function(decodedText) {
+    tampilQrStatus('loading');
+    try {
+        const resp = await fetch(`${API_URL}?kode_qr=${encodeURIComponent(decodedText)}`);
+        const json = await resp.json();
+
+        if (json.status === 'success' && json.data) {
+            // ✅ BARANG DITEMUKAN
+            const item = json.data;
+            document.getElementById('qr-found-detail').innerHTML = `
+                <p><strong>${item.nama_barang}</strong></p>
+                <p>${formatRupiah(item.harga)}</p>
+                <p class="text-xs text-green-600 mt-2 font-mono">Kode: ${decodedText}</p>
+            `;
+            tampilQrStatus('found');
+        } else {
+            // ⚠️ TIDAK DITEMUKAN
+            document.getElementById('qr-notfound-code').textContent = `Kode QR: ${decodedText}`;
+            tampilQrStatus('notfound');
+        }
+    } catch (e) {
+        document.getElementById('qr-notfound-code').textContent = `Jaringan error · Kode: ${decodedText}`;
+        tampilQrStatus('notfound');
+    }
+};
+
+// Buka modal dan mulai scanning
+window.bukaModalQrScan = function(mode) {
+    const modal = document.getElementById('qr-modal');
+    modal.classList.remove('hidden');
+    tampilQrStatus('init'); // Reset semua status card
+    initMainQrScanner();    // Nyalakan kamera
+};
+
+// Tutup modal dan matikan kamera
+window.tutupModalQrScan = function() {
+    document.getElementById('qr-modal').classList.add('hidden');
+    if (isMainScanning) {
+        stopCameraSafely(html5QrCode).then(() => { isMainScanning = false; });
+    }
+};
+
+// Inisialisasi kamera scanner di dalam modal
+window.initMainQrScanner = function() {
+    const readerEl = document.getElementById('qr-reader');
+    if (!readerEl) return;
+    if (isMainScanning) return; // Sudah aktif, skip
+
+    // Buat instance baru jika belum ada
+    if (!html5QrCode) html5QrCode = new Html5Qrcode('qr-reader');
+
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    startCameraWithFallback(html5QrCode, 'qr-reader', config,
+        // === ON QR CODE DETECTED ===
+        async (decodedText) => {
+            if (!isMainScanning) return; // Guard duplikat
+            isMainScanning = false;
+
+            // Stop kamera segera setelah QR terbaca
+            await stopCameraSafely(html5QrCode);
+
+            scannedQrCode = decodedText;
+            checkQrInServer(decodedText);
+        },
+        // === ON CAMERA ERROR (semua kamera gagal) ===
+        (err) => {
+            isMainScanning = false;
+            Swal.fire({ icon: 'error', title: 'Kamera Gagal', text: 'Tidak dapat mengakses kamera. Pastikan izin kamera aktif.' });
+        }
+    );
+    isMainScanning = true;
+};
+
+// ===== 8a. TOGGLE 3 STATUS CARD DI MODAL =====
+// Status: 'init' (semua hidden), 'loading', 'found', 'notfound'
+window.tampilQrStatus = function(status) {
+    const els = {
+        loading:  document.getElementById('qr-status-loading'),
+        found:    document.getElementById('qr-status-found'),
+        notfound: document.getElementById('qr-status-notfound')
+    };
+    // Sembunyikan semua dulu
+    Object.values(els).forEach(el => el.classList.add('hidden'));
+    // Tampilkan yang diminta
+    if (els[status]) els[status].classList.remove('hidden');
+};
+
+// ===== 8b. BRIDGE: QR "Tidak Ditemukan" → Buka Form Tambah =====
+window.lanjutTambahDariQR = function() {
+    tutupModalQrScan(); // Tutup modal scanner
+
+    // Buka form inline
+    const wrapper = document.getElementById('form-inline-wrapper');
+    if (wrapper) wrapper.style.display = 'block';
+    cancelEdit(); // Reset form ke mode "Tambah"
+
+    // Auto-fill kode QR dari hasil scan
+    const inputQr = document.getElementById('inline-kode_qr');
+    if (inputQr) inputQr.value = scannedQrCode;
+
+    // Auto-dapatkan lokasi GPS
+    setTimeout(() => dapatkanLokasi(), 500);
+
+    // Scroll ke form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// ===== 9. INLINE QR SCANNER (Di dalam Card Form) =====
+// Scanner yang tertanam langsung di form Tambah/Edit, bukan di modal
+
+window.toggleInlineQrScanner = function() {
+    const readerDiv = document.getElementById('qr-reader-inline');
+    const btnEl     = document.getElementById('btn-toggle-camera-inline');
+    const btnText   = btnEl ? (btnEl.querySelector('span') || btnEl) : null;
+
+    if (!readerDiv) return;
+
+    // === JIKA SEDANG AKTIF: Matikan ===
+    if (isInlineScanning) {
+        if (btnText) btnText.textContent = 'Menutup...';
+        stopCameraSafely(html5QrCodeInline).then(() => {
+            readerDiv.classList.add('hidden');
+            if (btnText) btnText.textContent = 'Buka Kamera';
+            isInlineScanning = false;
+        });
+        return;
+    }
+
+    // === JIKA TIDAK AKTIF: Nyalakan ===
+    readerDiv.classList.remove('hidden');
+    if (btnText) btnText.textContent = 'Memulai...';
+
+    // Buat instance baru jika belum ada
+    if (!html5QrCodeInline) html5QrCodeInline = new Html5Qrcode('qr-reader-inline');
+
+    const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+    startCameraWithFallback(html5QrCodeInline, 'qr-reader-inline', config,
+        // === ON QR CODE DETECTED ===
+        (decodedText) => {
+            if (!isInlineScanning) return;
+            isInlineScanning = false;
+
+            // Stop kamera
+            stopCameraSafely(html5QrCodeInline).then(() => {
+                readerDiv.classList.add('hidden');
+                if (btnText) btnText.textContent = 'Buka Kamera';
+            });
+
+            // Isi input kode QR di form
+            const inputQr = document.getElementById('inline-kode_qr');
+            if (inputQr) inputQr.value = decodedText;
+        },
+        // === ON CAMERA ERROR ===
+        (err) => {
+            readerDiv.classList.add('hidden');
+            if (btnText) btnText.textContent = 'Buka Kamera';
+            isInlineScanning = false;
+            Swal.fire({ icon: 'error', title: 'Kamera Gagal', text: 'Kamera diblokir atau tidak tersedia.' });
+        }
+    );
+    isInlineScanning = true;
+    if (btnText) btnText.textContent = 'X Tutup Kamera';
+};
+
+// ===== 10. UPLOAD / DRAG & DROP GAMBAR QR =====
+
+window.processQrImage = async function(file, mode) {
+    if (!file) return;
+
+    // Siapkan UI
+    const readerId = mode === 'main' ? 'qr-reader' : 'qr-reader-inline';
+    let localScanner = mode === 'main' ? html5QrCode : html5QrCodeInline;
+    
+    if (!localScanner) {
+        localScanner = new Html5Qrcode(readerId);
+        if (mode === 'main') html5QrCode = localScanner;
+        else html5QrCodeInline = localScanner;
+    }
+    
+    // Hentikan kamera jika sedang aktif berjalan
+    if (mode === 'main' && isMainScanning) {
+        await stopCameraSafely(html5QrCode);
+        isMainScanning = false;
+    } else if (mode === 'inline' && isInlineScanning) {
+        await stopCameraSafely(html5QrCodeInline);
+        isInlineScanning = false;
+        const btnText = document.querySelector('#btn-toggle-camera-inline span') || document.getElementById('btn-toggle-camera-inline');
+        if (btnText) btnText.textContent = 'Buka Kamera';
+        document.getElementById('qr-reader-inline').classList.add('hidden');
+    }
+
+    // Ekstrak QR Code dari file gambar secara statis
+    try {
+        if (mode === 'main') tampilQrStatus('loading');
+        
+        const decodedText = await localScanner.scanFile(file, true);
+        
+        // Hasil dari pembacaan gambar
+        if (mode === 'main') {
+            scannedQrCode = decodedText;
+            checkQrInServer(decodedText);
+        } else {
+            const inputInline = document.getElementById('inline-kode_qr');
+            if(inputInline) inputInline.value = decodedText;
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Berhasil scan dari gambar!', timer: 2000, showConfirmButton: false });
+        }
+    } catch (err) {
+        console.warn("[QR Image] failed to read: ", err);
+        if (mode === 'main') {
+            document.getElementById('qr-notfound-code').textContent = `QR tidak terdeteksi di gambar ini.`;
+            tampilQrStatus('notfound');
+        } else {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: 'Tidak ada kode QR yang jelas terdeteksi di gambar.' });
+        }
+    }
+    
+    // Reset file input value
+    const inputEl = mode === 'main' ? document.getElementById('qr-file-input') : document.getElementById('qr-file-input-inline');
+    if (inputEl) inputEl.value = '';
+};
+
+// Drag and drop event listeners untuk form Modal
+document.addEventListener('DOMContentLoaded', () => {
+    const dropzone = document.getElementById('qr-dropzone');
+    if(!dropzone) return;
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.add('border-blue-500', 'bg-blue-50'));
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.remove('border-blue-500', 'bg-blue-50'));
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if(files && files.length > 0) processQrImage(files[0], 'main');
+    });
+});
